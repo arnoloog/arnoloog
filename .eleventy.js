@@ -5,8 +5,8 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/styles.css");
   eleventyConfig.addPassthroughCopy("src/photos");
 
-  // Layout alias (belangrijk!)
-  eleventyConfig.addLayoutAlias('default', 'layouts/default.njk');
+  // Layout alias (jouw base.njk!)
+  eleventyConfig.addLayoutAlias("default", "layouts/base.njk");
 
   // Nunjucks date filter
   eleventyConfig.addNunjucksFilter("date", (value, format = "yyyy-MM-dd") => {
