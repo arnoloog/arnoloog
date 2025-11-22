@@ -1,28 +1,49 @@
 ---
 layout: layouts/base.njk
 pagination:
-  data: photos.rolls
+  data: photos.rollsList
   size: 1
-  alias: roll
-permalink: "rolls/{{ roll.slug }}/index.html"
+  alias: rollName
+permalink: "rolls/{{ rollName }}/"
 ---
 
-<section class="intro">
-  <h1>Roll: {{ roll.slug }}</h1>
-  <p>{{ roll.photos.length }} frames.</p>
-  <p><a href="/rolls/">← back to all rolls</a></p>
-</section>
+<h1 class="roll-title">{{ rollName }}</h1>
 
-<section id="grid" class="grid grid--roll">
-  {% for photo in roll.photos %}
-    <a 
-      href="{{ photo.src }}"
-      data-pswp-src="{{ photo.src }}"
-      data-pswp-width="1200"
-      data-pswp-height="1200"
-      class="grid-item"
-    >
-      <img src="{{ photo.src }}" alt="Frame {{ loop.index }} of {{ roll.slug }}" loading="lazy" />
-    </a>
+<div class="roll-photos">
+  {% for img in photos.rolls[rollName].full %}
+    <div class="photo-wrapper">
+      <img src="{{ img }}" alt="{{ rollName }} photo" loading="lazy" />
+    </div>
   {% endfor %}
-</section>
+</div>
+
+<style>
+  .roll-title {
+    font-size: 1.6rem;
+    text-align: center;
+    margin: 40px 0;
+    letter-spacing: 2px;
+  }
+
+  .roll-photos {
+    width: 90%;
+    margin: 0 auto;
+    display: grid;
+    gap: 25px;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  }
+
+  .roll-photos img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+  }
+
+  @media (max-width: 768px) {
+    .roll-photos {
+      grid-template-columns: 1fr;
+      width: 100%;
+    }
+  }
+</style>
