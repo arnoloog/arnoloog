@@ -5,16 +5,21 @@
     <title>{{ title or site.title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="{{ site.description }}">
-    <link rel="stylesheet" href="/styles.css">
+
+    {# ---- BELANGRIJK: CSS werkt nu op GitHub Pages ---- #}
+    <link rel="stylesheet" href="{{ '/styles.css' | url }}">
+
     <link rel="stylesheet" href="https://unpkg.com/photoswipe@5/dist/photoswipe.css">
   </head>
+
   <body class="page">
+
     <header class="site-header">
       <div class="site-header__inner">
-        <a href="/" class="logo">ARNOLOOG</a>
+        <a href="{{ '/' | url }}" class="logo">ARNOLOOG</a>
         <nav class="nav">
-          <a href="/#grid">grid</a>
-          <a href="/rolls/">rolls</a>
+          <a href="{{ '/' | url }}#grid">grid</a>
+          <a href="{{ '/rolls/' | url }}">rolls</a>
         </nav>
       </div>
     </header>
@@ -38,5 +43,6 @@
       });
       lightbox.init();
     </script>
+
   </body>
 </html>
