@@ -5,21 +5,40 @@ module.exports = function () {
   const rollsDir = path.join(__dirname, "..", "photos", "rolls");
   const rolls = {};
 
-  // read all roll folders
+  // Lees alle roll-mappen
   fs.readdirSync(rollsDir).forEach((rollFolder) => {
     const folderPath = path.join(rollsDir, rollFolder);
+
     if (!fs.lstatSync(folderPath).isDirectory()) return;
 
-    // get images inside roll
-    const images = fs
+    // Alle bestanden in map lezen
+    const files = fs
       .readdirSync(folderPath)
       .filter((f) => /\.(jpg|jpeg|png|webp)$/i.test(f))
-      .sort(); // ensures 01,02,03 order
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
-    rolls[rollFolder] = images.map((img) => ({
-      src: `/photos/rolls/${rollFolder}/${img}`,
-      filename: img,
-    }));
+    const grid = [];
+    const full = [];
+    let trigger = null;
+
+    files.forEach((file) => {
+      const lower = file.toLowerCase();
+
+      if (lower.includes("trigger")) {
+        trigger = `/photos/rolls/${rollFolder}/${file}`;
+      } else if (lower.includes("grid")) {
+        grid.push(`/photos/rolls/${rollFolder}/${file}`);
+      } else if (lower.includes("full")) {
+        full.push(`/photos/rolls/${rollFolder}/${file}`);
+      }
+    });
+
+    rolls[rollFolder] = {
+      slug: rollFolder,
+      grid,
+      trigger,
+      full,
+    };
   });
 
   return {
