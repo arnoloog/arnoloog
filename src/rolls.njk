@@ -1,0 +1,28 @@
+---
+layout: layouts/base.njk
+title: ARNOLOOG – Rolls
+permalink: "rolls/index.html"
+---
+
+<section class="intro">
+  <h1>Roll archive</h1>
+  <p>All rolls currently in the archive. Click a roll to view the full series.</p>
+</section>
+
+<section class="roll-list">
+  {% if photos.rolls.length == 0 %}
+    <p>No rolls yet. Add folders in <code>src/photos/rolls/</code>.</p>
+  {% endif %}
+  <ul>
+    {% for roll in photos.rolls %}
+      <li>
+        <a href="/rolls/{{ roll.slug }}/">
+          <span class="roll-name">{{ roll.slug }}</span>
+          {% if roll.photos[0] %}
+            <img src="{{ roll.photos[0].src }}" alt="Cover for {{ roll.slug }}" class="roll-cover" loading="lazy" />
+          {% endif %}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</section>

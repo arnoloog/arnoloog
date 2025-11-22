@@ -1,0 +1,28 @@
+---
+layout: layouts/base.njk
+pagination:
+  data: photos.rolls
+  size: 1
+  alias: roll
+permalink: "rolls/{{ roll.slug }}/index.html"
+---
+
+<section class="intro">
+  <h1>Roll: {{ roll.slug }}</h1>
+  <p>{{ roll.photos.length }} frames.</p>
+  <p><a href="/rolls/">← back to all rolls</a></p>
+</section>
+
+<section id="grid" class="grid grid--roll">
+  {% for photo in roll.photos %}
+    <a 
+      href="{{ photo.src }}"
+      data-pswp-src="{{ photo.src }}"
+      data-pswp-width="1200"
+      data-pswp-height="1200"
+      class="grid-item"
+    >
+      <img src="{{ photo.src }}" alt="Frame {{ loop.index }} of {{ roll.slug }}" loading="lazy" />
+    </a>
+  {% endfor %}
+</section>

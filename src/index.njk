@@ -1,0 +1,22 @@
+---
+layout: layouts/base.njk
+title: ARNOLOOG – Grid
+---
+
+<section class="intro">
+  <p>Analog photography grid experiment. Squares, rolls, life.</p>
+</section>
+
+<section id="grid" class="grid">
+  {% for photo in photos.homepage %}
+    <a 
+      href="{{ photo.src }}"
+      data-pswp-src="{{ photo.src }}"
+      data-pswp-width="1200"
+      data-pswp-height="1200"
+      class="grid-item"
+    >
+      <img src="{{ photo.src }}" alt="Analog placeholder {{ loop.index }}" loading="lazy" />
+    </a>
+  {% endfor %}
+</section>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>{{ title or site.title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{ site.description }}">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/photoswipe@5/dist/photoswipe.css">
+  </head>
+  <body class="page">
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a href="/" class="logo">ARNOLOOG</a>
+        <nav class="nav">
+          <a href="/#grid">grid</a>
+          <a href="/rolls/">rolls</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="site-main">
+      {{ content | safe }}
+    </main>
+
+    <footer class="site-footer">
+      <p>&copy; {{ "now" | date("yyyy") }} ARNOLOOG – Analog photography.</p>
+    </footer>
+
+    <div class="pswp" id="pswp" aria-hidden="true"></div>
+
+    <script type="module">
+      import PhotoSwipeLightbox from 'https://unpkg.com/photoswipe@5/dist/photoswipe-lightbox.esm.min.js';
+      const lightbox = new PhotoSwipeLightbox({
+        gallery: '#grid',
+        children: 'a[data-pswp-src]',
+        pswpModule: () => import('https://unpkg.com/photoswipe@5/dist/photoswipe.esm.min.js')
+      });
+      lightbox.init();
+    </script>
+  </body>
+</html>
