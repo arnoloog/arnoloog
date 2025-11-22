@@ -1,22 +1,35 @@
 ---
 layout: layouts/base.njk
-title: ARNOLOOG – Grid
+title: ARNOLOOG
 ---
 
-<section class="intro">
-  <p>Analog photography grid experiment. Squares, rolls, life.</p>
-</section>
+<section class="home-grid">
 
-<section id="grid" class="grid">
-  {% for photo in photos.homepage %}
-    <a 
-      href="{{ photo.src }}"
-      data-pswp-src="{{ photo.src }}"
-      data-pswp-width="1200"
-      data-pswp-height="1200"
-      class="grid-item"
-    >
-      <img src="{{ photo.src }}" alt="Analog placeholder {{ loop.index }}" loading="lazy" />
-    </a>
+  {# Loop door alle rolls in volgorde #}
+  {% for rollName in photos.rollsList %}
+    {% set roll = photos.rolls[rollName] %}
+
+    {# Eerst GRID-foto’s tonen #}
+    {% for img in roll.grid %}
+      <div class="cell">
+        <img src="{{ img }}" loading="lazy" />
+      </div>
+    {% endfor %}
+
+    {# Dan de separator: 8 zwarte vakjes + trigger in het midden #}
+    <div class="separator-grid">
+      {% for i in [1,2,3,4] %}
+        <div class="sep-block"></div>
+      {% endfor %}
+
+      <a href="/rolls/{{ rollName }}/" class="sep-trigger">
+        <img src="{{ roll.trigger }}" alt="{{ rollName }}" />
+      </a>
+
+      {% for i in [1,2,3,4] %}
+        <div class="sep-block"></div>
+      {% endfor %}
+    </div>
   {% endfor %}
+
 </section>
