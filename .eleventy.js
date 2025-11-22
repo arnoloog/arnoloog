@@ -5,6 +5,9 @@ module.exports = function(eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/styles.css");
   eleventyConfig.addPassthroughCopy("src/photos");
 
+  // Layout alias (belangrijk!)
+  eleventyConfig.addLayoutAlias('default', 'layouts/default.njk');
+
   // Nunjucks date filter
   eleventyConfig.addNunjucksFilter("date", (value, format = "yyyy-MM-dd") => {
     try {
@@ -18,8 +21,7 @@ module.exports = function(eleventyConfig) {
   return {
     dir: {
       input: "src",
-      includes: "_includes",      // laat dit zo
-      layouts: "_includes/layouts", // voeg deze toe (!!)
+      includes: "_includes",
       data: "_data",
       output: "_site"
     }
