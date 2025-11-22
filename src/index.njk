@@ -9,21 +9,21 @@ title: ARNOLOOG
   {% for rollName in photos.rollsList %}
     {% set roll = photos.rolls[rollName] %}
 
-    {# Eerst GRID-foto’s tonen #}
+    {# GRID-foto’s #}
     {% for img in roll.grid %}
-      <div class="cell">
-        <img src="{{ img }}" loading="lazy" />
+      <div class="grid-item">
+        <img src="{{ img }}" alt="{{ rollName }} grid image" />
       </div>
     {% endfor %}
 
-    {# Dan de separator: 8 zwarte vakjes + trigger in het midden #}
+    {# 3×3 separator – midden is trigger #}
     <div class="separator-grid">
       {% for i in [1,2,3,4] %}
         <div class="sep-block"></div>
       {% endfor %}
 
       <a href="/rolls/{{ rollName }}/" class="sep-trigger">
-        <img src="{{ roll.trigger }}" alt="{{ rollName }}" />
+        <img src="{{ roll.trigger }}" alt="{{ rollName }} trigger" />
       </a>
 
       {% for i in [1,2,3,4] %}
