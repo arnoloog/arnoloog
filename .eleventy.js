@@ -1,12 +1,10 @@
 const { DateTime } = require("luxon");
 
 module.exports = function(eleventyConfig) {
+
   // Passthrough files
   eleventyConfig.addPassthroughCopy("src/styles.css");
   eleventyConfig.addPassthroughCopy("src/photos");
-
-  // Layout alias (jouw base.njk!)
-  eleventyConfig.addLayoutAlias("default", "layouts/base.njk");
 
   // Nunjucks date filter
   eleventyConfig.addNunjucksFilter("date", (value, format = "yyyy-MM-dd") => {
@@ -19,6 +17,8 @@ module.exports = function(eleventyConfig) {
   });
 
   return {
+    pathPrefix: "/arnoloog/",   // ← BELANGRIJKSTE LIJN
+
     dir: {
       input: "src",
       includes: "_includes",
