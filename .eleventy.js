@@ -17,7 +17,7 @@ module.exports = function(eleventyConfig) {
   });
 
   return {
-    pathPrefix: "/arnoloog/",   // ← BELANGRIJKSTE LIJN
+    pathPrefix: "/",   // ← BELANGRIJK: FIXED
 
     dir: {
       input: "src",
