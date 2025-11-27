@@ -1,48 +1,51 @@
 const fs = require("fs");
 const path = require("path");
 
-module.exports = function () {
-  const rollsDir = path.join(__dirname, "..", "photos", "rolls");
-  const rolls = {};
+module.exports = () => {
+  const rollsDir = "src/photos/rolls";
+  const rollsFolders = fs.readdirSync(rollsDir).filter(f => !f.startsWith("."));
+  
+  const data = {
+    rollsList: [],
+    rolls: {}
+  };
 
-  // Lees alle roll-mappen
-  fs.readdirSync(rollsDir).forEach((rollFolder) => {
-    const folderPath = path.join(rollsDir, rollFolder);
-
-    if (!fs.lstatSync(folderPath).isDirectory()) return;
-
-    // Alle bestanden in map lezen
-    const files = fs
-      .readdirSync(folderPath)
-      .filter((f) => /\.(jpg|jpeg|png|webp)$/i.test(f))
-      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  rollsFolders.forEach(folder => {
+    const folderPath = path.join(rollsDir, folder);
+    const files = fs.readdirSync(folderPath);
 
     const grid = [];
     const full = [];
     let trigger = null;
 
-    files.forEach((file) => {
-      const lower = file.toLowerCase();
+    files.forEach(file => {
+      const filePath = `/photos/rolls/${folder}/${file}`;
 
-      if (lower.includes("trigger")) {
-        trigger = `/photos/rolls/${rollFolder}/${file}`;
-      } else if (lower.includes("grid")) {
-        grid.push(`/photos/rolls/${rollFolder}/${file}`);
-      } else if (lower.includes("full")) {
-        full.push(`/photos/rolls/${rollFolder}/${file}`);
+      if (file.toLowerCase().includes("grid")) {
+        grid.push(filePath);
+      } 
+      else if (file.toLowerCase().includes("trigger")) {
+        trigger = filePath;
+      } 
+      else if (file.toLowerCase().includes("full")) {
+        full.push(filePath);
       }
     });
 
-    rolls[rollFolder] = {
-      slug: rollFolder,
+    // Sorteren voor perfecte volgorde
+    grid.sort();
+    full.sort();
+
+    data.rollsList.push(folder);
+    data.rolls[folder] = {
       grid,
       trigger,
-      full,
+      full
     };
   });
 
-  return {
-    rolls,
-    rollsList: Object.keys(rolls).sort(),
-  };
+  // Sorteer roll-mappen (oud → nieuw)
+  data.rollsList.sort();
+
+  return data;
 };
