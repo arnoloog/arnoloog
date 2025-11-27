@@ -1,51 +1,61 @@
 const fs = require("fs");
 const path = require("path");
 
-module.exports = () => {
-  const rollsDir = "src/photos/rolls";
-  const rollsFolders = fs.readdirSync(rollsDir).filter(f => !f.startsWith("."));
-  
-  const data = {
-    rollsList: [],
-    rolls: {}
-  };
+const BASE = "src/photos/rolls";
 
-  rollsFolders.forEach(folder => {
-    const folderPath = path.join(rollsDir, folder);
-    const files = fs.readdirSync(folderPath);
+function cleanExt(filename) {
+  return filename.replace(".webp.webp", ".webp").replace(".png", ".webp");
+}
+
+function extractNumber(str) {
+  const num = str.match(/(\d+)/);
+  return num ? parseInt(num[1], 10) : 99999;
+}
+
+module.exports = () => {
+  const rolls = {};
+
+  const rollDirs = fs.readdirSync(BASE);
+
+  rollDirs.forEach((rollName) => {
+    const dirPath = path.join(BASE, rollName);
+    if (!fs.statSync(dirPath).isDirectory()) return;
+
+    const files = fs.readdirSync(dirPath).map(cleanExt);
 
     const grid = [];
     const full = [];
     let trigger = null;
 
-    files.forEach(file => {
-      const filePath = `/photos/rolls/${folder}/${file}`;
+    files.forEach((file) => {
+      const filePath = `/arnoloog/photos/rolls/${rollName}/${file}`;
 
-      if (file.toLowerCase().includes("grid")) {
+      if (file.includes("grid")) {
         grid.push(filePath);
-      } 
-      else if (file.toLowerCase().includes("trigger")) {
-        trigger = filePath;
-      } 
-      else if (file.toLowerCase().includes("full")) {
+      } else if (file.includes("full")) {
         full.push(filePath);
+      } else if (file.includes("trigger")) {
+        trigger = filePath;
       }
     });
 
-    // Sorteren voor perfecte volgorde
-    grid.sort();
-    full.sort();
+    // sorteer grid en full arrays op nummer
+    grid.sort((a, b) => extractNumber(a) - extractNumber(b));
+    full.sort((a, b) => extractNumber(a) - extractNumber(b));
 
-    data.rollsList.push(folder);
-    data.rolls[folder] = {
+    // trigger automatisch op de juiste plek
+    if (trigger) {
+      const triggerPos = extractNumber(trigger);
+      grid.splice(triggerPos - 1, 0, trigger);
+    }
+
+    rolls[rollName] = {
+      name: rollName,
       grid,
+      full,
       trigger,
-      full
     };
   });
 
-  // Sorteer roll-mappen (oud → nieuw)
-  data.rollsList.sort();
-
-  return data;
+  return { rolls };
 };
