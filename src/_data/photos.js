@@ -14,6 +14,7 @@ function extractNumber(str) {
 
 module.exports = () => {
   const rolls = {};
+  const rollsList = [];
 
   const rollDirs = fs.readdirSync(BASE);
 
@@ -39,11 +40,11 @@ module.exports = () => {
       }
     });
 
-    // sorteer grid en full arrays op nummer
+    // sorteer grid en full
     grid.sort((a, b) => extractNumber(a) - extractNumber(b));
     full.sort((a, b) => extractNumber(a) - extractNumber(b));
 
-    // trigger automatisch op de juiste plek
+    // trigger automatisch in grid invoegen
     if (trigger) {
       const triggerPos = extractNumber(trigger);
       grid.splice(triggerPos - 1, 0, trigger);
@@ -55,7 +56,18 @@ module.exports = () => {
       full,
       trigger,
     };
+
+    rollsList.push(rollName);
   });
+
+  // sorteert roll folders logisch (2017/2018/…)
+  rollsList.sort();
+
+  return {
+    rolls,
+    rollsList
+  };
+};
 
   return { rolls };
 };
