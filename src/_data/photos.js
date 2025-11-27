@@ -3,10 +3,12 @@ const path = require("path");
 
 const BASE = "src/photos/rolls";
 
+// verwijdert dubbele extensies zoals .webp.webp
 function cleanExt(filename) {
-  return filename.replace(".webp.webp", ".webp").replace(".png", ".webp");
+  return filename.replace(".webp.webp", ".webp");
 }
 
+// haalt nummer uit een bestandsnaam (bijv. 01, 02, 12)
 function extractNumber(str) {
   const num = str.match(/(\d+)/);
   return num ? parseInt(num[1], 10) : 99999;
@@ -16,6 +18,7 @@ module.exports = () => {
   const rolls = {};
   const rollsList = [];
 
+  // lees alle roll folders
   const rollDirs = fs.readdirSync(BASE);
 
   rollDirs.forEach((rollName) => {
@@ -29,7 +32,8 @@ module.exports = () => {
     let trigger = null;
 
     files.forEach((file) => {
-      const filePath = `/arnoloog/photos/rolls/${rollName}/${file}`;
+      // *** BELANGRIJK: correct pad (GEEN /arnoloog meer!) ***
+      const filePath = `/photos/rolls/${rollName}/${file}`;
 
       if (file.includes("grid")) {
         grid.push(filePath);
@@ -40,10 +44,11 @@ module.exports = () => {
       }
     });
 
+    // sorteer afbeeldingen op nummer
     grid.sort((a, b) => extractNumber(a) - extractNumber(b));
     full.sort((a, b) => extractNumber(a) - extractNumber(b));
 
-    // trigger toevoegen op positie (trigger-nummer - 1)
+    // trigger automatisch invoegen op juiste plaats
     if (trigger) {
       const triggerPos = extractNumber(trigger);
       grid.splice(triggerPos - 1, 0, trigger);
@@ -63,6 +68,6 @@ module.exports = () => {
 
   return {
     rolls,
-    rollsList,
+    rollsList
   };
 };
