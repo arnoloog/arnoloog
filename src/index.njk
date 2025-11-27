@@ -4,32 +4,13 @@ title: ARNOLOOG
 ---
 
 <section class="home-grid">
-
-  {# Loop door alle rolls in volgorde #}
   {% for rollName in photos.rollsList %}
     {% set roll = photos.rolls[rollName] %}
 
-    {# GRID-foto’s #}
-    {% for img in roll.grid %}
-      <div class="grid-item">
-        <img src="{{ img }}" alt="{{ rollName }} grid image" />
-      </div>
+    {# Toon ALLE grid-foto’s in omgekeerde volgorde #}
+    {% for img in roll.grid | reverse %}
+      <img src="{{ img }}" loading="lazy">
     {% endfor %}
 
-    {# 3×3 separator – midden is trigger #}
-    <div class="separator-grid">
-      {% for i in [1,2,3,4] %}
-        <div class="sep-block"></div>
-      {% endfor %}
-
-      <a href="/rolls/{{ rollName }}/" class="sep-trigger">
-        <img src="{{ roll.trigger }}" alt="{{ rollName }} trigger" />
-      </a>
-
-      {% for i in [1,2,3,4] %}
-        <div class="sep-block"></div>
-      {% endfor %}
-    </div>
   {% endfor %}
-
 </section>
