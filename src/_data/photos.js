@@ -40,11 +40,10 @@ module.exports = () => {
       }
     });
 
-    // sorteer grid en full
     grid.sort((a, b) => extractNumber(a) - extractNumber(b));
     full.sort((a, b) => extractNumber(a) - extractNumber(b));
 
-    // trigger automatisch in grid invoegen
+    // trigger toevoegen op positie (trigger-nummer - 1)
     if (trigger) {
       const triggerPos = extractNumber(trigger);
       grid.splice(triggerPos - 1, 0, trigger);
@@ -60,14 +59,10 @@ module.exports = () => {
     rollsList.push(rollName);
   });
 
-  // sorteert roll folders logisch (2017/2018/…)
   rollsList.sort();
 
   return {
     rolls,
-    rollsList
+    rollsList,
   };
-};
-
-  return { rolls };
 };
