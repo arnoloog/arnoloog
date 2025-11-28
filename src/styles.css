@@ -82,24 +82,27 @@ a:hover {
 }
 
 /* ========================= */
-/* PURE HOMEPAGE GRID        */
+/* HOMEPAGE GRID             */
 /* ========================= */
 
 .home-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2px;
   width: 100%;
 }
 
 .home-grid img {
   width: 100%;
-  height: 100%;
+  height: auto;
   object-fit: cover;
   display: block;
 }
 
-/* ROLL PAGE GRID */
+/* ========================= */
+/* ROLL PAGE GRID            */
+/* ========================= */
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
