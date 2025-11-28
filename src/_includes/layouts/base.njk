@@ -15,7 +15,7 @@
       <div class="site-header__inner">
         <a href="{{ '/' | url }}" class="logo">ARNOLOOG</a>
         <nav class="nav">
-          <a href="{{ '/#grid' | url }}">grid</a>
+          <a href="{{ '/' | url }}">grid</a>
           <a href="{{ '/rolls/' | url }}">rolls</a>
         </nav>
       </div>
@@ -31,14 +31,18 @@
 
     <div class="pswp" id="pswp" aria-hidden="true"></div>
 
+    <!-- Alleen PhotoSwipe laden op de rolls-pagina -->
+    {% if title == "ROLL" %}
     <script type="module">
       import PhotoSwipeLightbox from 'https://unpkg.com/photoswipe@5/dist/photoswipe-lightbox.esm.min.js';
       const lightbox = new PhotoSwipeLightbox({
-        gallery: '#grid',
+        gallery: '.grid',
         children: 'a[data-pswp-src]',
         pswpModule: () => import('https://unpkg.com/photoswipe@5/dist/photoswipe.esm.min.js')
       });
       lightbox.init();
     </script>
+    {% endif %}
   </body>
 </html>
+
