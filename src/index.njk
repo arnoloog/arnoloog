@@ -3,7 +3,7 @@
     {% set roll = photos.rolls[rollName] %}
 
     {% for img in roll.grid %}
-      <img src="{{ '/' | url }}{{ img }}" loading="lazy">
+      <img src="{{ img | url }}" loading="lazy">
     {% endfor %}
   {% endfor %}
 </section>
