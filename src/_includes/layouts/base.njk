@@ -11,7 +11,6 @@
   </head>
 
   <body class="page">
-
     <header class="site-header">
       <div class="site-header__inner">
         <a href="{{ '/' | url }}" class="logo">ARNOLOOG</a>
@@ -32,11 +31,8 @@
 
     <div class="pswp" id="pswp" aria-hidden="true"></div>
 
-    {# ----------------------------- #}
-    {#     PHOTOSWIPE ENKEL OP ROL   #}
-    {# ----------------------------- #}
-
-    {% if page.url.startsWith('/rolls/') %}
+    {# --- Alleen PhotoSwipe laden op roll-pagina’s --- #}
+    {% if page.url startswith "/rolls/" %}
     <script type="module">
       import PhotoSwipeLightbox from 'https://unpkg.com/photoswipe@5/dist/photoswipe-lightbox.esm.min.js';
       const lightbox = new PhotoSwipeLightbox({
@@ -47,6 +43,5 @@
       lightbox.init();
     </script>
     {% endif %}
-
   </body>
 </html>
