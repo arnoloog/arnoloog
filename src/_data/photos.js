@@ -4,7 +4,7 @@ const path = require("path");
 const BASE = "src/photos/rolls";
 
 function cleanExt(filename) {
-  return filename.replace(".webp.webp", ".webp").replace(".png", ".webp");
+  return filename.replace(".webp.webp", ".webp");
 }
 
 function extractNumber(str) {
@@ -20,44 +20,43 @@ module.exports = () => {
 
   rollDirs.forEach((rollName) => {
     const dirPath = path.join(BASE, rollName);
-    if (!fs.statSync(dirPath).isDirectory()) return;
-
     const files = fs.readdirSync(dirPath);
 
-    let grid = [];
-    let full = [];
+    const grid = [];
+    const full = [];
     let trigger = null;
 
     files.forEach((file) => {
-      const clean = cleanExt(file);
+      const fixed = cleanExt(file);
 
-      if (clean.includes("grid")) grid.push(clean);
-      else if (clean.includes("full")) full.push(clean);
-      else if (clean.includes("trigger")) trigger = clean;
+      if (fixed.includes("-full-")) {
+        full.push(`/photos/rolls/${rollName}/${fixed}`);
+      } else if (fixed.includes("-grid-")) {
+        grid.push(`/photos/rolls/${rollName}/${fixed}`);
+      } else if (fixed.includes("trigger")) {
+        trigger = `/photos/rolls/${rollName}/${fixed}`;
+      }
     });
 
+    // sorteer grid & full
     grid.sort((a, b) => extractNumber(a) - extractNumber(b));
     full.sort((a, b) => extractNumber(a) - extractNumber(b));
 
+    // trigger invoegen op juiste plek
     if (trigger) {
-      const pos = extractNumber(trigger);
-      grid.splice(pos - 1, 0, trigger);
+      const pos = extractNumber(trigger); // bv roll01-trigger-62.webp
+      const index = pos - 1;
+
+      if (index >= 0 && index <= grid.length) {
+        grid.splice(index, 0, trigger);
+      }
     }
 
-    rolls[rollName] = {
-      rollName,
-      grid,
-      full,
-      trigger,
-    };
-
+    rolls[rollName] = { grid, full, trigger };
     rollsList.push(rollName);
   });
 
   rollsList.sort();
 
-  return {
-    rolls,
-    rollsList,
-  };
+  return { rolls, rollsList };
 };
