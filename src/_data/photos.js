@@ -4,9 +4,7 @@ const path = require("path");
 const BASE = "src/photos/rolls";
 
 function cleanExt(filename) {
-  return filename
-    .replace(".webp.webp", ".webp")
-    .replace(".png", ".webp");
+  return filename.replace(".webp.webp", ".webp");
 }
 
 function extractNumber(str) {
@@ -28,29 +26,31 @@ module.exports = () => {
 
     const gridImages = [];
     const fullImages = [];
+    let triggerImg = null;
 
     files.forEach((file) => {
       if (file.startsWith(".")) return;
 
-      const cleaned = cleanExt(file);
-      const relPath = `photos/rolls/${rollName}/${cleaned}`;
+      const f = cleanExt(file);
 
-      // full-foto’s apart houden
-      if (cleaned.includes("-full-")) {
-        fullImages.push(relPath);
-      } else {
-        // grid + trigger horen in de grid
-        gridImages.push(relPath);
+      const rel = `photos/rolls/${rollName}/${f}`;
+
+      if (f.includes("grid-")) {
+        gridImages.push(rel);
+      } else if (f.includes("trigger-")) {
+        triggerImg = rel;
+      } else if (f.includes("full-")) {
+        fullImages.push(rel);
       }
     });
 
-    // sorteer op nummer (grid en full)
     gridImages.sort((a, b) => extractNumber(a) - extractNumber(b));
     fullImages.sort((a, b) => extractNumber(a) - extractNumber(b));
 
     rolls[rollName] = {
       name: rollName,
       grid: gridImages,
+      trigger: triggerImg,
       full: fullImages
     };
 
