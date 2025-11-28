@@ -4,7 +4,7 @@ const path = require("path");
 const BASE = "src/photos/rolls";
 
 function cleanExt(filename) {
-  return filename.replace(".webp.webp", ".webp");
+  return filename.replace(".webp.webp", ".webp").replace(".png", ".webp");
 }
 
 function extractNumber(str) {
@@ -25,33 +25,27 @@ module.exports = () => {
     const files = fs.readdirSync(dirPath);
 
     const gridImages = [];
-    const fullImages = [];
-    let triggerImg = null;
+    let triggerImage = null;
 
     files.forEach((file) => {
       if (file.startsWith(".")) return;
 
-      const f = cleanExt(file);
+      const cleaned = cleanExt(file);
+      const relPath = `photos/rolls/${rollName}/${cleaned}`;
 
-      const rel = `photos/rolls/${rollName}/${f}`;
-
-      if (f.includes("grid-")) {
-        gridImages.push(rel);
-      } else if (f.includes("trigger-")) {
-        triggerImg = rel;
-      } else if (f.includes("full-")) {
-        fullImages.push(rel);
+      if (cleaned.includes("trigger")) {
+        triggerImage = relPath;
+      } else if (cleaned.includes("grid")) {
+        gridImages.push(relPath);
       }
     });
 
     gridImages.sort((a, b) => extractNumber(a) - extractNumber(b));
-    fullImages.sort((a, b) => extractNumber(a) - extractNumber(b));
 
     rolls[rollName] = {
       name: rollName,
-      grid: gridImages,
-      trigger: triggerImg,
-      full: fullImages
+      trigger: triggerImage,
+      grid: gridImages
     };
 
     rollsList.push(rollName);
