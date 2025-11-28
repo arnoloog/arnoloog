@@ -11,10 +11,10 @@
   </head>
 
   <body class="page">
+
     <header class="site-header">
       <div class="site-header__inner">
         <a href="{{ '/' | url }}" class="logo">ARNOLOOG</a>
-
         <nav class="nav">
           <a href="{{ '/' | url }}">grid</a>
           <a href="{{ '/rolls/' | url }}">rolls</a>
@@ -32,23 +32,21 @@
 
     <div class="pswp" id="pswp" aria-hidden="true"></div>
 
-    {# ------------------------------- #}
-    {# Lightbox ALLEEN op roll-pagina #}
-    {# ------------------------------- #}
+    {# ----------------------------- #}
+    {#     PHOTOSWIPE ENKEL OP ROL   #}
+    {# ----------------------------- #}
 
-    {% if page.url contains '/rolls/' %}
+    {% if page.url.startsWith('/rolls/') %}
     <script type="module">
       import PhotoSwipeLightbox from 'https://unpkg.com/photoswipe@5/dist/photoswipe-lightbox.esm.min.js';
-
       const lightbox = new PhotoSwipeLightbox({
         gallery: '.grid',
         children: 'a[data-pswp-src]',
-        pswpModule: () =>
-          import('https://unpkg.com/photoswipe@5/dist/photoswipe.esm.min.js')
+        pswpModule: () => import('https://unpkg.com/photoswipe@5/dist/photoswipe.esm.min.js')
       });
-
       lightbox.init();
     </script>
     {% endif %}
+
   </body>
 </html>
