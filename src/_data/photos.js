@@ -18,21 +18,35 @@ module.exports = () => {
 
   const rollDirs = fs.readdirSync(BASE);
 
-@@ -39,11 +40,11 @@
-      }
+  rollDirs.forEach((rollName) => {
+    const dirPath = path.join(BASE, rollName);
+    if (!fs.statSync(dirPath).isDirectory()) return;
+
+    const files = fs.readdirSync(dirPath);
+
+    let grid = [];
+    let full = [];
+    let trigger = null;
+
+    files.forEach((file) => {
+      const clean = cleanExt(file);
+
+      if (clean.includes("grid")) grid.push(clean);
+      else if (clean.includes("full")) full.push(clean);
+      else if (clean.includes("trigger")) trigger = clean;
     });
 
-    // sorteer grid en full arrays op nummer
-    // sorteer grid en full
     grid.sort((a, b) => extractNumber(a) - extractNumber(b));
     full.sort((a, b) => extractNumber(a) - extractNumber(b));
 
-    // trigger automatisch op de juiste plek
-    // trigger automatisch in grid invoegen
     if (trigger) {
-      const triggerPos = extractNumber(trigger);
-      grid.splice(triggerPos - 1, 0, trigger);
-@@ -55,7 +56,18 @@
+      const pos = extractNumber(trigger);
+      grid.splice(pos - 1, 0, trigger);
+    }
+
+    rolls[rollName] = {
+      rollName,
+      grid,
       full,
       trigger,
     };
@@ -40,14 +54,10 @@ module.exports = () => {
     rollsList.push(rollName);
   });
 
-  // sorteert roll folders logisch (2017/2018/…)
   rollsList.sort();
 
   return {
     rolls,
-    rollsList
+    rollsList,
   };
-};
-
-  return { rolls };
 };
