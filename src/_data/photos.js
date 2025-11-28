@@ -4,61 +4,57 @@ const path = require("path");
 const BASE = "src/photos/rolls";
 
 function cleanExt(filename) {
-  return filename.replace(".webp.webp", ".webp").replace(".png", ".webp");
+  return filename
+    .replace(".webp.webp", ".webp")
+    .replace(".png", ".webp");
 }
 
+// Haal het LAATSTE nummer uit een bestandsnaam
 function extractNumber(str) {
-  const num = str.match(/(\d+)/);
-  return num ? parseInt(num[1], 10) : 99999;
+  const match = str.match(/(\d+)(?=\D*$)/);
+  return match ? parseInt(match[1], 10) : 99999;
 }
 
 module.exports = () => {
   const rolls = {};
   const rollsList = [];
 
-  const rollDirs = fs.readdirSync(BASE).filter(item => {
-    const fullPath = path.join(BASE, item);
-    return fs.statSync(fullPath).isDirectory();  // <-- skip files!
-  });
+  const rollDirs = fs.readdirSync(BASE);
 
   rollDirs.forEach((rollName) => {
     const dirPath = path.join(BASE, rollName);
+
+    // Skip geen directories (.gitkeep etc.)
+    if (!fs.statSync(dirPath).isDirectory()) return;
+
     const files = fs.readdirSync(dirPath);
 
-    const grid = [];
-    const full = [];
-    let trigger = null;
+    const gridImages = [];
 
     files.forEach((file) => {
-      const cleaned = cleanExt(file);
+      if (file.startsWith(".")) return; // Skip hidden files
 
-      if (cleaned.includes("-grid-")) grid.push(cleaned);
-      else if (cleaned.includes("-full-")) full.push(cleaned);
-      else if (cleaned.includes("trigger")) trigger = cleaned;
+      const cleaned = cleanExt(file);
+      const relPath = `/photos/rolls/${rollName}/${cleaned}`;
+
+      gridImages.push(relPath);
     });
 
-    grid.sort((a, b) => extractNumber(a) - extractNumber(b));
-    full.sort((a, b) => extractNumber(a) - extractNumber(b));
-
-    if (trigger) {
-      const triggerPos = extractNumber(trigger);
-      grid.splice(triggerPos - 1, 0, trigger);
-    }
+    // ⬇️ **BELANGRIJKE FIX: sorteer ALLES op nummer, dus trigger-62 komt juist**
+    gridImages.sort((a, b) => {
+      return extractNumber(a) - extractNumber(b);
+    });
 
     rolls[rollName] = {
       name: rollName,
-      grid,
-      full,
-      trigger,
+      grid: gridImages
     };
 
     rollsList.push(rollName);
   });
 
-  rollsList.sort();
-
   return {
     rolls,
-    rollsList,
+    rollsList
   };
 };
