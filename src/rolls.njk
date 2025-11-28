@@ -1,39 +1,21 @@
 ---
 layout: layouts/base.njk
-pagination:
-  data: photos.rollsList
-  size: 1
-  alias: rollName
-permalink: "/rolls/{{ rollName }}/index.html"
+title: ROLLS
 ---
 
-{% set roll = photos.rolls[rollName] %}
+{% for rollName in photos.rollsList %}
+  {% set roll = photos.rolls[rollName] %}
 
-<h1 class="roll-title">{{ rollName }}</h1>
+  <section class="roll">
+    <h2 class="roll-title">{{ rollName }}</h2>
 
-<section id="grid" class="grid">
-  {% for img in roll.grid %}
-    <a 
-      href="{{ img }}" 
-      data-pswp-src="{{ img }}"
-      data-pswp-width="1600"
-      data-pswp-height="1200"
-      class="grid-item"
-    >
-      <img src="{{ img }}" loading="lazy" alt="" />
-    </a>
-  {% endfor %}
-</section>
-
-<section class="full-gallery">
-  {% for img in roll.full %}
-    <a 
-      href="{{ img }}" 
-      data-pswp-src="{{ img }}"
-      data-pswp-width="1600"
-      data-pswp-height="1200"
-    >
-      <img src="{{ img }}" loading="lazy" />
-    </a>
-  {% endfor %}
-</section>
+    <div class="grid">
+      {% for img in roll.grid %}
+        {% set full = roll.full[loop.index0] or img %}
+        <a href="{{ full | url }}">
+          <img src="{{ img | url }}" loading="lazy">
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+{% endfor %}
