@@ -1,14 +1,12 @@
----
-layout: layouts/base.njk
-title: ARNOLOOG
----
-
-<section class="home-grid">
+<section id="grid" class="home-grid">
   {% for rollName in photos.rollsList %}
     {% set roll = photos.rolls[rollName] %}
 
-    {% for img in roll.grid | reverse %}
-      <img src="/photos/rolls/{{ rollName }}/{{ img }}" loading="lazy">
+    {% for img in roll.grid %}
+      <img 
+        src="/photos/rolls/{{ rollName }}/{{ img }}" 
+        loading="lazy"
+      >
     {% endfor %}
   {% endfor %}
 </section>
