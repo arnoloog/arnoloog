@@ -33,18 +33,18 @@ module.exports = () => {
       if (file.startsWith(".")) return;
 
       const cleaned = cleanExt(file);
+      const relPath = `photos/rolls/${rollName}/${cleaned}`;
 
-      // GRID -> roll01-grid-xx.webp
-      if (cleaned.includes("-grid-")) {
-        gridImages.push(cleaned);
-      }
-
-      // FULL -> roll01-full-xx.webp
+      // full-foto’s apart houden
       if (cleaned.includes("-full-")) {
-        fullImages.push(cleaned);
+        fullImages.push(relPath);
+      } else {
+        // grid + trigger horen in de grid
+        gridImages.push(relPath);
       }
     });
 
+    // sorteer op nummer (grid en full)
     gridImages.sort((a, b) => extractNumber(a) - extractNumber(b));
     fullImages.sort((a, b) => extractNumber(a) - extractNumber(b));
 
