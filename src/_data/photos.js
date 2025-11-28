@@ -33,14 +33,11 @@ module.exports = () => {
 
       const cleaned = cleanExt(file);
 
-      // *** BELANGRIJK ***
-      // GitHub Pages serveert relative paths -> GEEN leading slash gebruiken
-      const relPath = `photos/rolls/${rollName}/${cleaned}`;
-
-      gridImages.push(relPath);
+      // Return ONLY the filename
+      gridImages.push(cleaned);
     });
 
-    // Sorteer op nummer
+    // Sort images numerically
     gridImages.sort((a, b) => extractNumber(a) - extractNumber(b));
 
     rolls[rollName] = {
