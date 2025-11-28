@@ -4,7 +4,7 @@ const path = require("path");
 const BASE = "src/photos/rolls";
 
 function cleanExt(filename) {
-  return filename.replace(".webp.webp", ".webp");
+  return filename.replace(".webp.webp", ".webp").replace(".png", ".webp");
 }
 
 function extractNumber(str) {
@@ -16,7 +16,10 @@ module.exports = () => {
   const rolls = {};
   const rollsList = [];
 
-  const rollDirs = fs.readdirSync(BASE);
+  const rollDirs = fs.readdirSync(BASE).filter(item => {
+    const fullPath = path.join(BASE, item);
+    return fs.statSync(fullPath).isDirectory();  // <-- skip files!
+  });
 
   rollDirs.forEach((rollName) => {
     const dirPath = path.join(BASE, rollName);
@@ -27,36 +30,35 @@ module.exports = () => {
     let trigger = null;
 
     files.forEach((file) => {
-      const fixed = cleanExt(file);
+      const cleaned = cleanExt(file);
 
-      if (fixed.includes("-full-")) {
-        full.push(`/photos/rolls/${rollName}/${fixed}`);
-      } else if (fixed.includes("-grid-")) {
-        grid.push(`/photos/rolls/${rollName}/${fixed}`);
-      } else if (fixed.includes("trigger")) {
-        trigger = `/photos/rolls/${rollName}/${fixed}`;
-      }
+      if (cleaned.includes("-grid-")) grid.push(cleaned);
+      else if (cleaned.includes("-full-")) full.push(cleaned);
+      else if (cleaned.includes("trigger")) trigger = cleaned;
     });
 
-    // sorteer grid & full
     grid.sort((a, b) => extractNumber(a) - extractNumber(b));
     full.sort((a, b) => extractNumber(a) - extractNumber(b));
 
-    // trigger invoegen op juiste plek
     if (trigger) {
-      const pos = extractNumber(trigger); // bv roll01-trigger-62.webp
-      const index = pos - 1;
-
-      if (index >= 0 && index <= grid.length) {
-        grid.splice(index, 0, trigger);
-      }
+      const triggerPos = extractNumber(trigger);
+      grid.splice(triggerPos - 1, 0, trigger);
     }
 
-    rolls[rollName] = { grid, full, trigger };
+    rolls[rollName] = {
+      name: rollName,
+      grid,
+      full,
+      trigger,
+    };
+
     rollsList.push(rollName);
   });
 
   rollsList.sort();
 
-  return { rolls, rollsList };
+  return {
+    rolls,
+    rollsList,
+  };
 };
