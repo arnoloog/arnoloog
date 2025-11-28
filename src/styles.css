@@ -3,18 +3,16 @@
 /* ========================= */
 
 .home-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2px;
+  column-count: 3;
+  column-gap: 0;
   width: 100%;
 }
 
 .home-grid img {
   width: 100%;
-  height: 100%;
-  aspect-ratio: 1/1;
-  object-fit: cover;
   display: block;
+  margin: 0 0 0;
+  break-inside: avoid;
 }
 
 /* ========================= */
@@ -22,24 +20,22 @@
 /* ========================= */
 
 .grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2px;
+  column-count: 3;
+  column-gap: 0;
   width: 100%;
 }
 
-.grid-item img {
+.grid img {
   width: 100%;
-  height: 100%;
-  aspect-ratio: 1/1;
-  object-fit: cover;
   display: block;
+  break-inside: avoid;
+  margin: 0;
 }
 
-/* Mobiel? → Niks verandert. Nog steeds 3 kolommen. */
+/* Mobiel ook 3 kolommen */
 @media (max-width: 640px) {
   .home-grid,
   .grid {
-    grid-template-columns: repeat(3, 1fr);
+    column-count: 3;
   }
 }
