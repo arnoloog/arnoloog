@@ -36,7 +36,7 @@
   display: block;
 }
 
-/* Geen afwijking op mobiel → altijd 3 kolommen */
+/* Mobiel? → Niks verandert. Nog steeds 3 kolommen. */
 @media (max-width: 640px) {
   .home-grid,
   .grid {
