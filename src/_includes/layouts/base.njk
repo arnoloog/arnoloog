@@ -31,8 +31,8 @@
 
     <div class="pswp" id="pswp" aria-hidden="true"></div>
 
-    {# --- Alleen PhotoSwipe laden op roll-pagina’s --- #}
-    {% if page.url startswith "/rolls/" %}
+    {# --- Alleen PhotoSwipe laden op roll-pagina’s (zonder errors) --- #}
+    {% if page.url.indexOf('/rolls/') === 0 %}
     <script type="module">
       import PhotoSwipeLightbox from 'https://unpkg.com/photoswipe@5/dist/photoswipe-lightbox.esm.min.js';
       const lightbox = new PhotoSwipeLightbox({
