@@ -1,16 +1,9 @@
----
-layout: layouts/base.njk
-title: ARNOLOOG
----
-
 <section class="home-grid">
   {% for rollName in photos.rollsList %}
     {% set roll = photos.rolls[rollName] %}
 
-    {# Toon ALLE grid-foto’s in omgekeerde volgorde #}
     {% for img in roll.grid | reverse %}
-      <img src="{{ img }}" loading="lazy">
+      <img src="/photos/rolls/{{ rollName }}/{{ img }}" loading="lazy">
     {% endfor %}
-
   {% endfor %}
 </section>
