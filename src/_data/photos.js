@@ -27,22 +27,31 @@ module.exports = () => {
     const files = fs.readdirSync(dirPath);
 
     const gridImages = [];
+    const fullImages = [];
 
     files.forEach((file) => {
       if (file.startsWith(".")) return;
 
       const cleaned = cleanExt(file);
 
-      // Return ONLY the filename
-      gridImages.push(cleaned);
+      // GRID -> roll01-grid-xx.webp
+      if (cleaned.includes("-grid-")) {
+        gridImages.push(cleaned);
+      }
+
+      // FULL -> roll01-full-xx.webp
+      if (cleaned.includes("-full-")) {
+        fullImages.push(cleaned);
+      }
     });
 
-    // Sort images numerically
     gridImages.sort((a, b) => extractNumber(a) - extractNumber(b));
+    fullImages.sort((a, b) => extractNumber(a) - extractNumber(b));
 
     rolls[rollName] = {
       name: rollName,
-      grid: gridImages
+      grid: gridImages,
+      full: fullImages
     };
 
     rollsList.push(rollName);
