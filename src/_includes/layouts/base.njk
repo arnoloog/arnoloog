@@ -1,35 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>{{ title or site.title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{{ site.description }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARNOLOOG</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
 
-    <link rel="stylesheet" href="{{ '/styles.css' | url }}">
-  </head>
+<body>
 
-  <body class="page">
-    <header class="site-header">
-      <div class="site-header__inner">
-        <a href="{{ '/' | url }}" class="logo">ARNOLOOG</a>
-        <nav class="nav">
-          <a href="{{ '/' | url }}">grid</a>
-          {# link naar nieuwste roll (laatste in rollsList) #}
-          {% if photos and photos.rollsList and photos.rollsList.length %}
-            {% set latestRoll = photos.rollsList | last %}
-            <a href="{{ ('/rolls/' ~ latestRoll ~ '/') | url }}">rolls</a>
-          {% endif %}
-        </nav>
-      </div>
-    </header>
+<header class="site-header">
+  <a href="/" class="logo">ARNOLOOG</a>
+</header>
 
-    <main class="site-main">
-      {{ content | safe }}
-    </main>
+<main class="site-main">
+  {{ content | safe }}
+</main>
 
-    <footer class="site-footer">
-      <p>&copy; {{ "now" | date("yyyy") }} ARNOLOOG – Analog photography.</p>
-    </footer>
-  </body>
+</body>
 </html>
