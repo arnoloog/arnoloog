@@ -1,25 +1,18 @@
 ---
 layout: layouts/base.njk
-pagination:
-  data: photos.rollsList
-  size: 1
-  alias: rollName
-permalink: "rolls/{{ rollName }}/"
 ---
 
-{% set roll = photos.rolls[rollName] %}
+<div class="home-grid">
 
-<article class="roll-page">
-  <header class="roll-header">
-    <h1 class="roll-title">{{ rollName }}</h1>
-    <p class="roll-subtitle">Analog roll · {{ roll.full | length }} photos</p>
-  </header>
+{% for roll in site.photos.rolls %}
+  {% for item in roll.grid %}
+    <a 
+      href="/rolls/{{ roll.name }}/"
+      class="grid-item{% if item.isTrigger %} trigger{% endif %}"
+    >
+      <img src="{{ item.src }}" alt="">
+    </a>
+  {% endfor %}
+{% endfor %}
 
-  <section class="roll-gallery">
-    {% for img in roll.full %}
-      <figure class="roll-photo">
-        <img src="{{ '/' | url }}{{ img }}" alt="" loading="lazy">
-      </figure>
-    {% endfor %}
-  </section>
-</article>
+</div>
