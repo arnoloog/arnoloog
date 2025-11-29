@@ -3,13 +3,7 @@
     {% set roll = photos.rolls[rollName] %}
 
     {% for img in roll.grid %}
-      {% if img == roll.trigger %}
-        <a href="/rolls/{{ roll.name }}/">
-          <img class="trigger" src="{{ img | url }}" loading="lazy">
-        </a>
-      {% else %}
-        <img src="{{ img | url }}" loading="lazy">
-      {% endif %}
+      <img src="{{ img | url }}" loading="lazy">
     {% endfor %}
   {% endfor %}
 </section>
