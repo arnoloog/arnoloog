@@ -1,14 +1,9 @@
 const fs = require("fs");
 const path = require("path");
 
-const BASE = "src/photos/rolls";
+const ROLLS_BASE = "src/photos/rolls";
 
-function cleanExt(filename) {
-  return filename
-    .replace(".webp.webp", ".webp")
-    .replace(".png", ".webp");
-}
-
+// pak laatste nummer uit de bestandsnaam (01, 12, 62, …)
 function extractNumber(str) {
   const match = str.match(/(\d+)(?=\D*$)/);
   return match ? parseInt(match[1], 10) : 99999;
@@ -18,52 +13,56 @@ module.exports = () => {
   const rolls = {};
   const rollsList = [];
 
-  const rollDirs = fs.readdirSync(BASE);
+  // directories in src/photos/rolls (bv. 2017-roll01, 2018-roll02, ...)
+  const rollDirs = fs
+    .readdirSync(ROLLS_BASE)
+    .filter((name) => !name.startsWith("."))
+    .sort(); // oplopend: 2017-roll01, 2018-roll02, ...
 
   rollDirs.forEach((rollName) => {
-    const dirPath = path.join(BASE, rollName);
+    const dirPath = path.join(ROLLS_BASE, rollName);
     if (!fs.statSync(dirPath).isDirectory()) return;
 
-    const files = fs.readdirSync(dirPath);
+    const files = fs
+      .readdirSync(dirPath)
+      .filter((file) => !file.startsWith("."));
 
-    const grid = [];
-    const full = [];
-    let trigger = null;
+    const gridItems = [];
+    const fullImages = [];
 
     files.forEach((file) => {
-      if (file.startsWith(".")) return;
+      const webPath = `photos/rolls/${rollName}/${file}`;
 
-      const cleaned = cleanExt(file);
-      const relPath = `/photos/rolls/${rollName}/${cleaned}`;
-
-      if (cleaned.includes("grid")) {
-        grid.push({ file: relPath, num: extractNumber(cleaned) });
+      // full-foto’s: alleen voor de roll-pagina
+      if (file.includes("-full-")) {
+        fullImages.push(webPath);
       }
 
-      if (cleaned.includes("full")) {
-        full.push({ file: relPath, num: extractNumber(cleaned) });
-      }
-
-      if (cleaned.includes("trigger")) {
-        trigger = { file: relPath, num: extractNumber(cleaned) };
+      // grid-foto’s EN trigger-foto’s komen in de grid
+      if (file.includes("-grid-") || file.includes("-trigger-")) {
+        gridItems.push({
+          src: webPath,
+          num: extractNumber(file),
+          isTrigger: file.includes("-trigger-"),
+        });
       }
     });
 
-    grid.sort((a, b) => a.num - b.num);
-    full.sort((a, b) => a.num - b.num);
+    // sorteer alles op nummer
+    gridItems.sort((a, b) => a.num - b.num);
+    fullImages.sort((a, b) => extractNumber(a) - extractNumber(b));
 
     rolls[rollName] = {
       name: rollName,
-      grid: grid.map(g => g.file),
-      full: full.map(f => f.file),
-      trigger: trigger ? trigger.file : null,
-      order: extractNumber(rollName) // zodat 2017-roll01 boven 2018-roll01 staat
+      grid: gridItems, // objects: { src, num, isTrigger }
+      full: fullImages, // strings
     };
 
     rollsList.push(rollName);
   });
 
-  rollsList.sort();
-
-  return { rolls, rollsList };
+  return {
+    rolls,
+    rollsList,
+  };
 };
