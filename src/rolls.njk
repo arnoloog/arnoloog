@@ -1,18 +1,24 @@
 ---
 layout: layouts/base.njk
+title: Rolls
 ---
 
-<div class="home-grid">
-
-{% for roll in site.photos.rolls %}
-  {% for item in roll.grid %}
-    <a 
-      href="/rolls/{{ roll.name }}/"
-      class="grid-item{% if item.isTrigger %} trigger{% endif %}"
-    >
-      <img src="{{ item.src }}" alt="">
+<section class="rolls-grid">
+  {% for roll in photos.rolls %}
+    <a href="/rolls/{{ roll.name }}/" class="rolls-item">
+      <div class="rolls-thumb">
+        {% if roll.trigger %}
+          <img src="{{ roll.trigger }}" loading="lazy" alt="{{ roll.name }}">
+        {% else %}
+          {% set first = roll.grid[0] %}
+          {% if first %}
+            <img src="{{ first.src }}" loading="lazy" alt="{{ roll.name }}">
+          {% endif %}
+        {% endif %}
+      </div>
+      <div class="rolls-label">
+        {{ roll.name }}
+      </div>
     </a>
   {% endfor %}
-{% endfor %}
-
-</div>
+</section>
