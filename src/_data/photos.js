@@ -3,91 +3,50 @@ const path = require("path");
 
 const BASE = "src/photos/rolls";
 
-function cleanExt(f) {
-  return f.replace(".webp.webp", ".webp").replace(".png", ".webp");
-}
-
-function extractNumber(str) {
-  const m = str.match(/(\d+)(?=\D*$)/);
-  return m ? parseInt(m[1], 10) : 99999;
-}
-
-function extractYear(rollName) {
-  const m = rollName.match(/^(\d{4})/);
-  return m ? parseInt(m[1], 10) : 0;
-}
-
-function extractRollNo(rollName) {
-  const m = rollName.match(/roll(\d+)/i);
-  return m ? parseInt(m[1], 10) : 0;
+function extractNum(str) {
+  const match = str.match(/(\d+)(?!.*\d)/);
+  return match ? parseInt(match[1], 10) : 99999;
 }
 
 module.exports = () => {
-  const rolls = [];
-  const dirs = fs.readdirSync(BASE);
+  const rolls = {};
+  const rollsList = [];
 
-  dirs.forEach((rollName) => {
+  const rollDirs = fs.readdirSync(BASE);
+
+  rollDirs.forEach((rollName) => {
     const dirPath = path.join(BASE, rollName);
+
     if (!fs.statSync(dirPath).isDirectory()) return;
 
     const files = fs.readdirSync(dirPath);
 
-    const gridItems = [];
-    const fullItems = [];
-    let triggerItem = null;
+    const grid = [];
+    const full = [];
 
     files.forEach((file) => {
-      if (file.startsWith(".")) return;
+      if (!file.endsWith(".webp")) return;
 
-      const cleaned = cleanExt(file);
-      const rel = `/photos/rolls/${rollName}/${cleaned}`;
-      const n = extractNumber(cleaned);
+      const rel = `/photos/rolls/${rollName}/${file}`;
 
-      if (cleaned.includes("-full-")) {
-        fullItems.push(rel);
-      } else if (cleaned.includes("-trigger-")) {
-        triggerItem = { src: rel, index: n, isTrigger: true };
-      } else if (cleaned.includes("-grid-")) {
-        gridItems.push({ src: rel, index: n, isTrigger: false });
-      }
+      if (file.includes("grid")) grid.push(rel);
+      if (file.includes("full")) full.push(rel);
     });
 
-    // combineer grid + trigger, sorteer op nummer
-    const combined = [...gridItems];
-    if (triggerItem) combined.push(triggerItem);
-    combined.sort((a, b) => a.index - b.index);
+    grid.sort((a, b) => extractNum(a) - extractNum(b));
+    full.sort((a, b) => extractNum(a) - extractNum(b));
 
-    const year = extractYear(rollName);
-    const rollNo = extractRollNo(rollName);
-
-    rolls.push({
+    rolls[rollName] = {
       name: rollName,
-      year,
-      rollNo,
-      grid: combined,
-      full: fullItems.sort((a, b) => extractNumber(a) - extractNumber(b)),
-      trigger: triggerItem ? triggerItem.src : null
-    });
-  });
+      grid,
+      full
+    };
 
-  // sorteer rolls: nieuwste jaar bovenaan, dan hoogste rollnr
-  rolls.sort((a, b) => {
-    if (b.year !== a.year) return b.year - a.year;
-    if (b.rollNo !== a.rollNo) return b.rollNo - a.rollNo;
-    return a.name.localeCompare(b.name);
+    rollsList.unshift(rollName);
   });
-
-  // map per naam (handig, mocht je later nodig hebben)
-  const rollsByName = {};
-  const rollsList = [];
-  for (const r of rolls) {
-    rollsByName[r.name] = r;
-    rollsList.push(r.name);
-  }
 
   return {
-    rolls,       // array
-    rollsByName, // map
-    rollsList    // namen in volgorde
+    rolls,
+    rollsList
   };
 };
