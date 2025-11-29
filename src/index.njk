@@ -1,17 +1,25 @@
 ---
-title: "HOME"
 layout: layouts/base.njk
+title: ARNOLOOG
 ---
 
-<section class="home-grid">
-
-  {% for rollName in photos.rollsList %}
-    {% set roll = photos.rolls[rollName] %}
-
-    {% for img in roll.grid %}
-      <img src="{{ img | url }}" loading="lazy">
+<section class="home">
+  <div class="home-grid">
+    {% for roll in photos.rolls %}
+      {# binnen elke roll: omkeren zodat 01 onderaan zit #}
+      {% for item in roll.grid | reverse %}
+        {% if item.isTrigger %}
+          <a href="/rolls/{{ roll.name }}/" class="grid-item grid-item--trigger">
+            <img src="{{ item.src }}" loading="lazy" alt="">
+          </a>
+        {% else %}
+          <div class="grid-item">
+            <img src="{{ item.src }}" loading="lazy" alt="">
+          </div>
+        {% endif %}
+      {% endfor %}
     {% endfor %}
+  </div>
 
-  {% endfor %}
-
+  <div class="fast-scroll-thumb" aria-label="fast scroll"></div>
 </section>
