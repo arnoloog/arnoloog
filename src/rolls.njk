@@ -1,21 +1,24 @@
 ---
 layout: layouts/base.njk
-title: ROLLS
+title: Rolls
 ---
 
-{% for rollName in photos.rollsList %}
-  {% set roll = photos.rolls[rollName] %}
-
-  <section class="roll">
-    <h2 class="roll-title">{{ rollName }}</h2>
-
-    <div class="grid">
-      {% for img in roll.grid %}
-        {% set full = roll.full[loop.index0] or img %}
-        <a href="{{ full | url }}">
-          <img src="{{ img | url }}" loading="lazy">
-        </a>
-      {% endfor %}
-    </div>
-  </section>
-{% endfor %}
+<section class="rolls-grid">
+  {% for roll in photos.rolls %}
+    <a href="/rolls/{{ roll.name }}/" class="rolls-item">
+      <div class="rolls-thumb">
+        {% if roll.trigger %}
+          <img src="{{ roll.trigger }}" loading="lazy" alt="{{ roll.name }}">
+        {% else %}
+          {% set first = roll.grid[0] %}
+          {% if first %}
+            <img src="{{ first.src }}" loading="lazy" alt="{{ roll.name }}">
+          {% endif %}
+        {% endif %}
+      </div>
+      <div class="rolls-label">
+        {{ roll.name }}
+      </div>
+    </a>
+  {% endfor %}
+</section>
