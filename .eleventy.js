@@ -1,18 +1,11 @@
 const { DateTime } = require("luxon");
 
 module.exports = function(eleventyConfig) {
+  // CSS en foto’s doorgeven naar _site
+  eleventyConfig.addPassthroughCopy("src/styles.css");
+  eleventyConfig.addPassthroughCopy("src/photos");
 
-  // Styles kopiëren naar /styles.css
-  eleventyConfig.addPassthroughCopy({
-    "src/styles.css": "styles.css"
-  });
-
-  // FOTO’S JUIST KOPIËREN → naar /photos/
-  eleventyConfig.addPassthroughCopy({
-    "src/photos": "photos"
-  });
-
-  // Date filter
+  // Datumfilter (als je ooit nodig hebt)
   eleventyConfig.addNunjucksFilter("date", (value, format = "yyyy-MM-dd") => {
     try {
       return DateTime.fromJSDate(value).toFormat(format);
