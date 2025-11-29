@@ -1,71 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8">
+    <title>{{ title or site.title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{ site.description }}">
 
-  <title>{{ title or "ARNOLOOG" }}</title>
+    <link rel="stylesheet" href="{{ '/styles.css' | url }}">
+  </head>
 
-  <style>
-    body {
-      background: #000;
-      color: #fff;
-      margin: 0;
-      padding: 20px 0;
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-    }
+  <body class="page">
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a href="{{ '/' | url }}" class="logo">ARNOLOOG</a>
+        <nav class="nav">
+          <a href="{{ '/' | url }}">grid</a>
+          {# link naar nieuwste roll (laatste in rollsList) #}
+          {% if photos and photos.rollsList and photos.rollsList.length %}
+            {% set latestRoll = photos.rollsList | last %}
+            <a href="{{ ('/rolls/' ~ latestRoll ~ '/') | url }}">rolls</a>
+          {% endif %}
+        </nav>
+      </div>
+    </header>
 
-    main {
-      width: 100%;
-      max-width: 920px; /* zorgt voor mooiere grid op desktop */
-      padding: 0 10px;
-    }
+    <main class="site-main">
+      {{ content | safe }}
+    </main>
 
-    /* 3 kolommen layout */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2px;
-    }
-
-    .grid img {
-      width: 100%;
-      aspect-ratio: 1/1;
-      object-fit: cover;
-      display: block;
-    }
-
-    /* trigger effect */
-    .trigger {
-      outline: 2px solid rgba(255,255,255,0.2);
-      animation: glow 2.5s infinite ease-in-out;
-    }
-
-    @keyframes glow {
-      0% { outline-color: rgba(255,255,255,0.2); }
-      50% { outline-color: rgba(255,255,255,0.8); }
-      100% { outline-color: rgba(255,255,255,0.2); }
-    }
-
-    /* roll page */
-    .roll-page {
-      width: 100%;
-      max-width: 920px;
-      margin: 0 auto;
-    }
-
-    .roll-photo img {
-      width: 100%;
-      margin-bottom: 20px;
-    }
-  </style>
-</head>
-
-<body>
-  <main>
-    {{ content | safe }}
-  </main>
-</body>
+    <footer class="site-footer">
+      <p>&copy; {{ "now" | date("yyyy") }} ARNOLOOG – Analog photography.</p>
+    </footer>
+  </body>
 </html>
