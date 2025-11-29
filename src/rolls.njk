@@ -1,0 +1,22 @@
+---
+layout: layouts/base.njk
+pagination:
+  data: photos.rolls
+  size: 1
+  alias: roll
+permalink: "rolls/{{ roll.name }}/"
+---
+
+<article class="roll-page">
+  <header class="roll-header">
+    <h1 class="roll-title">{{ roll.name }}</h1>
+  </header>
+
+  <section class="roll-gallery">
+    {% for img in roll.full %}
+    <figure class="roll-photo">
+      <img src="{{ img }}" loading="lazy" alt="">
+    </figure>
+    {% endfor %}
+  </section>
+</article>
