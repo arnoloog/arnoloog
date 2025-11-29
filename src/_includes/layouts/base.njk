@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>{{ title or site.title }}</title>
+    <title>{{ title or "ARNOLOOG" }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{{ site.description }}">
+    <meta name="description" content="ARNOLOOG – Analog photography.">
 
     <link rel="stylesheet" href="{{ '/styles.css' | url }}">
   </head>
@@ -27,5 +27,56 @@
     <footer class="site-footer">
       <p>&copy; {{ "now" | date("yyyy") }} ARNOLOOG – Analog photography.</p>
     </footer>
+
+    <script>
+      // simpele "snelle scroll" thumb rechts (Spotify-style)
+      (function () {
+        const thumb = document.querySelector(".fast-scroll-thumb");
+        if (!thumb) return;
+
+        function scrollToPosition(clientY) {
+          const h = window.innerHeight;
+          const ratio = clientY / h;
+          const maxScroll = document.documentElement.scrollHeight - h;
+          window.scrollTo({
+            top: maxScroll * ratio,
+            behavior: "auto",
+          });
+        }
+
+        thumb.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          scrollToPosition(e.clientY);
+          function move(ev) {
+            scrollToPosition(ev.clientY);
+          }
+          function up() {
+            window.removeEventListener("mousemove", move);
+            window.removeEventListener("mouseup", up);
+          }
+          window.addEventListener("mousemove", move);
+          window.addEventListener("mouseup", up);
+        });
+
+        thumb.addEventListener(
+          "touchstart",
+          (e) => {
+            if (!e.touches.length) return;
+            function move(ev) {
+              if (!ev.touches.length) return;
+              scrollToPosition(ev.touches[0].clientY);
+            }
+            function end() {
+              window.removeEventListener("touchmove", move);
+              window.removeEventListener("touchend", end);
+            }
+            window.addEventListener("touchmove", move, { passive: true });
+            window.addEventListener("touchend", end);
+            scrollToPosition(e.touches[0].clientY);
+          },
+          { passive: true }
+        );
+      })();
+    </script>
   </body>
 </html>
