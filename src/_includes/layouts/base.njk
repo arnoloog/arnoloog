@@ -1,82 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>{{ title or "ARNOLOOG" }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="ARNOLOOG – Analog photography.">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARNOLOOG</title>
 
-    <link rel="stylesheet" href="{{ '/styles.css' | url }}">
-  </head>
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
 
-  <body class="page">
-    <header class="site-header">
-      <div class="site-header__inner">
-        <a href="{{ '/' | url }}" class="logo">ARNOLOOG</a>
-        <nav class="nav">
-          <a href="{{ '/' | url }}">grid</a>
-          <a href="{{ '/rolls/' | url }}">rolls</a>
-        </nav>
-      </div>
-    </header>
+    header {
+      padding: 20px;
+      text-align: center;
+    }
 
-    <main class="site-main">
-      {{ content | safe }}
-    </main>
+    header a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 24px;
+      letter-spacing: 2px;
+      font-weight: bold;
+    }
 
-    <footer class="site-footer">
-      <p>&copy; {{ "now" | date("yyyy") }} ARNOLOOG – Analog photography.</p>
-    </footer>
+    main {
+      padding: 10px;
+    }
 
-    <script>
-      // simpele "snelle scroll" thumb rechts (Spotify-style)
-      (function () {
-        const thumb = document.querySelector(".fast-scroll-thumb");
-        if (!thumb) return;
+    /* GRID LAYOUT */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
 
-        function scrollToPosition(clientY) {
-          const h = window.innerHeight;
-          const ratio = clientY / h;
-          const maxScroll = document.documentElement.scrollHeight - h;
-          window.scrollTo({
-            top: maxScroll * ratio,
-            behavior: "auto",
-          });
-        }
+    .grid img {
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      display: block;
+    }
 
-        thumb.addEventListener("mousedown", (e) => {
-          e.preventDefault();
-          scrollToPosition(e.clientY);
-          function move(ev) {
-            scrollToPosition(ev.clientY);
-          }
-          function up() {
-            window.removeEventListener("mousemove", move);
-            window.removeEventListener("mouseup", up);
-          }
-          window.addEventListener("mousemove", move);
-          window.addEventListener("mouseup", up);
-        });
+    /* TRIGGER EFFECT */
+    .trigger {
+      outline: 2px solid rgba(255,255,255,0.3);
+      animation: pulse 2.5s infinite ease-in-out;
+    }
 
-        thumb.addEventListener(
-          "touchstart",
-          (e) => {
-            if (!e.touches.length) return;
-            function move(ev) {
-              if (!ev.touches.length) return;
-              scrollToPosition(ev.touches[0].clientY);
-            }
-            function end() {
-              window.removeEventListener("touchmove", move);
-              window.removeEventListener("touchend", end);
-            }
-            window.addEventListener("touchmove", move, { passive: true });
-            window.addEventListener("touchend", end);
-            scrollToPosition(e.touches[0].clientY);
-          },
-          { passive: true }
-        );
-      })();
-    </script>
-  </body>
+    @keyframes pulse {
+      0% { outline-color: rgba(255,255,255,0.2); }
+      50% { outline-color: rgba(255,255,255,0.7); }
+      100% { outline-color: rgba(255,255,255,0.2); }
+    }
+
+    /* ROLL PAGE (FULL FOTO’S) */
+    .roll-title {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 20px;
+      letter-spacing: 1px;
+    }
+
+    .roll-gallery {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding-bottom: 50px;
+    }
+
+    .roll-photo img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+  </style>
+</head>
+
+<body>
+  <header>
+    <a href="/">ARNOLOOG</a>
+  </header>
+
+  <main>
+    {{ content | safe }}
+  </main>
+
+</body>
 </html>
