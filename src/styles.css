@@ -1,30 +1,139 @@
-/* ========================= */
-/*    GLOBAL BLACK THEME     */
-/* ========================= */
+:root {
+  --bg: #050505;
+  --fg: #f5f5f5;
+  --muted: #888888;
+  --border-subtle: #222222;
+  --accent: #ffffff;
+}
 
-body {
+/* RESETJE */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body.page {
   margin: 0;
-  background: #000;
-  color: #fff;
-  font-family: sans-serif;
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+/* LINKS */
+a {
+  color: var(--fg);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* HEADER */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.9),
+    rgba(0, 0, 0, 0.85),
+    transparent
+  );
+  backdrop-filter: blur(10px);
+}
+
+.site-header__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+.nav a {
+  margin-left: 1rem;
+  font-size: 0.85rem;
+  text-transform: lowercase;
+  color: var(--muted);
+}
+
+.nav a:hover {
+  color: var(--fg);
+}
+
+/* MAIN LAYOUT */
+.site-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 3rem;
+}
+
+/* FOOTER */
+.site-footer {
+  border-top: 1px solid var(--border-subtle);
+  padding: 1.5rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
 }
 
 /* ========================= */
-/*         HOME GRID         */
+/*        HOMEPAGE GRID      */
 /* ========================= */
 
 .home-grid {
-  width: 100%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2px;
+  width: 100%;
 }
 
+.grid-item {
+  position: relative;
+  overflow: hidden;
+}
+
+/* vierkante tegels, altijd 3 kolommen */
 .home-grid img {
   display: block;
   width: 100%;
+  height: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
+}
+
+/* trigger: subtiele highlight + hovering */
+.grid-item--trigger {
+  outline: 1px solid rgba(255, 255, 255, 0.15);
+  outline-offset: -1px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease,
+    outline-color 0.3s ease;
+}
+
+.grid-item--trigger img {
+  transition: transform 0.3s ease;
+}
+
+.grid-item--trigger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  outline-color: rgba(255, 255, 255, 0.4);
+}
+
+.grid-item--trigger:hover img {
+  transform: scale(1.02);
 }
 
 /* ========================= */
@@ -32,34 +141,48 @@ body {
 /* ========================= */
 
 .roll-page {
-  max-width: 900px;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 20px 10px;
+}
+
+.roll-header {
+  margin-bottom: 1.5rem;
+}
+
+.roll-title {
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin: 0 0 0.25rem;
+}
+
+.roll-subtitle {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
 }
 
 .roll-gallery {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .roll-photo img {
   width: 100%;
-  display: block;
   height: auto;
+  display: block;
+  border-radius: 2px;
 }
 
-/* ========================= */
-/*       TRIGGER STYLE       */
-/* ========================= */
+/* Altijd 3 kolommen, ook mobiel */
+@media (max-width: 640px) {
+  .site-main {
+    padding-inline: 0.5rem;
+  }
 
-.trigger {
-  outline: 3px solid rgba(255, 255, 255, 0.3);
-  outline-offset: -3px;
-  transition: transform 0.15s ease, outline-color 0.15s ease;
+  .home-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
-.trigger:hover {
-  transform: scale(1.03);
-  outline-color: white;
-}
