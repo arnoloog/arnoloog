@@ -1,68 +1,93 @@
 const fs = require("fs");
 const path = require("path");
 
-const ROLLS_BASE = "src/photos/rolls";
+const BASE = "src/photos/rolls";
 
-// pak laatste nummer uit de bestandsnaam (01, 12, 62, …)
+function cleanExt(f) {
+  return f.replace(".webp.webp", ".webp").replace(".png", ".webp");
+}
+
 function extractNumber(str) {
-  const match = str.match(/(\d+)(?=\D*$)/);
-  return match ? parseInt(match[1], 10) : 99999;
+  const m = str.match(/(\d+)(?=\D*$)/);
+  return m ? parseInt(m[1], 10) : 99999;
+}
+
+function extractYear(rollName) {
+  const m = rollName.match(/^(\d{4})/);
+  return m ? parseInt(m[1], 10) : 0;
+}
+
+function extractRollNo(rollName) {
+  const m = rollName.match(/roll(\d+)/i);
+  return m ? parseInt(m[1], 10) : 0;
 }
 
 module.exports = () => {
-  const rolls = {};
-  const rollsList = [];
+  const rolls = [];
+  const dirs = fs.readdirSync(BASE);
 
-  // directories in src/photos/rolls (bv. 2017-roll01, 2018-roll02, ...)
-  const rollDirs = fs
-    .readdirSync(ROLLS_BASE)
-    .filter((name) => !name.startsWith("."))
-    .sort(); // oplopend: 2017-roll01, 2018-roll02, ...
-
-  rollDirs.forEach((rollName) => {
-    const dirPath = path.join(ROLLS_BASE, rollName);
+  dirs.forEach((rollName) => {
+    const dirPath = path.join(BASE, rollName);
     if (!fs.statSync(dirPath).isDirectory()) return;
 
-    const files = fs
-      .readdirSync(dirPath)
-      .filter((file) => !file.startsWith("."));
+    const files = fs.readdirSync(dirPath);
 
     const gridItems = [];
-    const fullImages = [];
+    const fullItems = [];
+    let triggerItem = null;
 
     files.forEach((file) => {
-      const webPath = `photos/rolls/${rollName}/${file}`;
+      if (file.startsWith(".")) return;
 
-      // full-foto’s: alleen voor de roll-pagina
-      if (file.includes("-full-")) {
-        fullImages.push(webPath);
-      }
+      const cleaned = cleanExt(file);
+      const rel = `/photos/rolls/${rollName}/${cleaned}`;
+      const n = extractNumber(cleaned);
 
-      // grid-foto’s EN trigger-foto’s komen in de grid
-      if (file.includes("-grid-") || file.includes("-trigger-")) {
-        gridItems.push({
-          src: webPath,
-          num: extractNumber(file),
-          isTrigger: file.includes("-trigger-"),
-        });
+      if (cleaned.includes("-full-")) {
+        fullItems.push(rel);
+      } else if (cleaned.includes("-trigger-")) {
+        triggerItem = { src: rel, index: n, isTrigger: true };
+      } else if (cleaned.includes("-grid-")) {
+        gridItems.push({ src: rel, index: n, isTrigger: false });
       }
     });
 
-    // sorteer alles op nummer
-    gridItems.sort((a, b) => a.num - b.num);
-    fullImages.sort((a, b) => extractNumber(a) - extractNumber(b));
+    // combineer grid + trigger, sorteer op nummer
+    const combined = [...gridItems];
+    if (triggerItem) combined.push(triggerItem);
+    combined.sort((a, b) => a.index - b.index);
 
-    rolls[rollName] = {
+    const year = extractYear(rollName);
+    const rollNo = extractRollNo(rollName);
+
+    rolls.push({
       name: rollName,
-      grid: gridItems, // objects: { src, num, isTrigger }
-      full: fullImages, // strings
-    };
-
-    rollsList.push(rollName);
+      year,
+      rollNo,
+      grid: combined,
+      full: fullItems.sort((a, b) => extractNumber(a) - extractNumber(b)),
+      trigger: triggerItem ? triggerItem.src : null
+    });
   });
 
+  // sorteer rolls: nieuwste jaar bovenaan, dan hoogste rollnr
+  rolls.sort((a, b) => {
+    if (b.year !== a.year) return b.year - a.year;
+    if (b.rollNo !== a.rollNo) return b.rollNo - a.rollNo;
+    return a.name.localeCompare(b.name);
+  });
+
+  // map per naam (handig, mocht je later nodig hebben)
+  const rollsByName = {};
+  const rollsList = [];
+  for (const r of rolls) {
+    rollsByName[r.name] = r;
+    rollsList.push(r.name);
+  }
+
   return {
-    rolls,
-    rollsList,
+    rolls,       // array
+    rollsByName, // map
+    rollsList    // namen in volgorde
   };
 };
