@@ -1,9 +1,24 @@
-<section class="home-grid">
-  {% for rollName in photos.rollsList %}
+<section id="grid" class="home-grid">
+  {# 
+    Eerst laatste roll bovenaan: nieuwste roll bovenaan de pagina.
+    Daarna binnen elke roll: hoogste nummer bovenaan.
+  #}
+  {% for rollName in photos.rollsList | reverse %}
     {% set roll = photos.rolls[rollName] %}
 
-    {% for img in roll.grid %}
-      <img src="{{ img | url }}" loading="lazy">
+    {% for item in roll.grid | reverse %}
+      {% if item.isTrigger %}
+        <a
+          href="{{ ('/rolls/' ~ rollName ~ '/') | url }}"
+          class="grid-item grid-item--trigger"
+        >
+          <img src="{{ '/' | url }}{{ item.src }}" alt="" loading="lazy">
+        </a>
+      {% else %}
+        <div class="grid-item">
+          <img src="{{ '/' | url }}{{ item.src }}" alt="" loading="lazy">
+        </div>
+      {% endif %}
     {% endfor %}
   {% endfor %}
 </section>
