@@ -3,8 +3,14 @@ const path = require("path");
 
 const BASE = "src/photos/rolls";
 
-function extractNum(str) {
-  const match = str.match(/(\d+)(?!.*\d)/);
+function cleanExt(filename) {
+  return filename
+    .replace(".webp.webp", ".webp")
+    .replace(".png", ".webp");
+}
+
+function extractNumber(str) {
+  const match = str.match(/(\d+)(?=\D*$)/);
   return match ? parseInt(match[1], 10) : 99999;
 }
 
@@ -16,33 +22,35 @@ module.exports = () => {
 
   rollDirs.forEach((rollName) => {
     const dirPath = path.join(BASE, rollName);
-
     if (!fs.statSync(dirPath).isDirectory()) return;
 
     const files = fs.readdirSync(dirPath);
-
     const grid = [];
     const full = [];
+    let trigger = null;
 
     files.forEach((file) => {
-      if (!file.endsWith(".webp")) return;
+      if (file.startsWith(".")) return;
 
-      const rel = `/photos/rolls/${rollName}/${file}`;
+      const cleaned = cleanExt(file);
+      const relPath = `/photos/rolls/${rollName}/${cleaned}`;
 
-      if (file.includes("grid")) grid.push(rel);
-      if (file.includes("full")) full.push(rel);
+      if (cleaned.includes("grid")) grid.push({ file: relPath, order: extractNumber(cleaned) });
+      if (cleaned.includes("full")) full.push({ file: relPath, order: extractNumber(cleaned) });
+      if (cleaned.includes("trigger")) trigger = { file: relPath, order: extractNumber(cleaned) };
     });
 
-    grid.sort((a, b) => extractNum(a) - extractNum(b));
-    full.sort((a, b) => extractNum(a) - extractNum(b));
+    grid.sort((a, b) => a.order - b.order);
+    full.sort((a, b) => a.order - b.order);
 
     rolls[rollName] = {
       name: rollName,
-      grid,
-      full
+      grid: grid.map(g => g.file),
+      full: full.map(f => f.file),
+      trigger: trigger ? trigger.file : null
     };
 
-    rollsList.unshift(rollName);
+    rollsList.push(rollName);
   });
 
   return {
