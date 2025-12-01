@@ -17,11 +17,12 @@ body.page {
   min-height: 100vh;
   background-color: var(--bg);
   color: var(--fg);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* Header */
+/* ========================= */
+/*          HEADER           */
+/* ========================= */
 
 .site-header {
   position: sticky;
@@ -44,7 +45,7 @@ body.page {
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   color: #ffffff;
 }
 
@@ -59,7 +60,9 @@ body.page {
   color: var(--fg);
 }
 
-/* Layout */
+/* ========================= */
+/*          LAYOUT           */
+/* ========================= */
 
 .site-main {
   max-width: 1100px;
@@ -78,10 +81,6 @@ body.page {
 /* ========================= */
 /*       HOMEPAGE GRID       */
 /* ========================= */
-
-.home {
-  position: relative;
-}
 
 .home-grid {
   max-width: 1100px;
@@ -103,45 +102,42 @@ body.page {
   aspect-ratio: 1 / 1;
   object-fit: cover;
   display: block;
-  transform: translateZ(0);
   transition: transform 150ms ease-out;
 }
 
-/* Trigger: subtiel randje + animatie */
+/* ========================= */
+/*     TRIGGER GLOW RING     */
+/* ========================= */
 
-.grid-item--trigger::after {
+.grid-item--trigger::before {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: 0;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15),
-    0 0 18px rgba(255, 255, 255, 0.12);
-  opacity: 0;
+  inset: -2px;
   pointer-events: none;
-  transition: opacity 200ms ease-out;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255,255,255,0) 0deg,
+    rgba(255,255,255,0.6) 90deg,
+    rgba(255,255,255,0) 180deg,
+    rgba(255,255,255,0.6) 270deg,
+    rgba(255,255,255,0) 360deg
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 2px;
+  animation: triggerGlowSpin 6s linear infinite;
+  opacity: 0.65;
 }
 
-.grid-item--trigger:hover img {
-  transform: scale(1.03);
-}
-
-.grid-item--trigger:hover::after {
-  opacity: 1;
-}
-
-/* zacht pulse effect */
-
-@keyframes triggerPulse {
-  0%, 100% { opacity: 0; }
-  45% { opacity: 1; }
-}
-
-.grid-item--trigger {
-  animation: triggerPulse 8s infinite;
+@keyframes triggerGlowSpin {
+  100% { transform: rotate(360deg); }
 }
 
 /* ========================= */
-/*   FAST SCROLL (rechts)    */
+/*       FAST SCROLLBAR       */
 /* ========================= */
 
 .fast-scroll-thumb {
@@ -167,7 +163,7 @@ body.page {
 }
 
 /* ========================= */
-/*   ROLLS OVERZICHT PAGINA  */
+/*      ROLLS OVERVIEW       */
 /* ========================= */
 
 .rolls-grid {
@@ -179,19 +175,14 @@ body.page {
 .rolls-item {
   display: flex;
   flex-direction: column;
-  text-decoration: none;
   color: inherit;
-}
-
-.rolls-thumb {
-  overflow: hidden;
+  text-decoration: none;
 }
 
 .rolls-thumb img {
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 1/1;
   object-fit: cover;
-  display: block;
 }
 
 .rolls-label {
@@ -203,24 +194,8 @@ body.page {
 }
 
 /* ========================= */
-/*     ROLL DETAIL PAGINA    */
+/*      ROLL DETAIL PAGE     */
 /* ========================= */
-
-.roll-page {
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.roll-header {
-  margin-bottom: 1rem;
-}
-
-.roll-title {
-  font-size: 0.9rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
 
 .roll-gallery {
   display: flex;
@@ -231,11 +206,41 @@ body.page {
 .roll-photo img {
   width: 100%;
   height: auto;
-  display: block;
 }
 
 /* ========================= */
-/*       RESPONSIVE          */
+/*        CLEAN CHAOS        */
+/* ========================= */
+
+.grid-item,
+.grid-item--trigger {
+  opacity: 1;
+  transition:
+    transform 900ms cubic-bezier(.22,1.2,.4,1),
+    opacity 300ms ease-out;
+}
+
+/* CHAOS MODE (rustige maar coole warboel) */
+.grid-item.chaos,
+.grid-item--trigger.chaos {
+  transform:
+    translate(
+      calc((var(--randX) - 0.5) * 65px),
+      calc((var(--randY) - 0.5) * 65px)
+    )
+    rotate(calc((var(--randR) - 0.5) * 40deg))
+    scale(calc(0.9 + var(--randS) * 0.15));
+}
+
+/* SNAP PERFECT GRID */
+.grid-item.snap,
+.grid-item--trigger.snap {
+  transform: translate(0,0) rotate(0) scale(1);
+  opacity: 1;
+}
+
+/* ========================= */
+/*        RESPONSIVE         */
 /* ========================= */
 
 @media (max-width: 640px) {
@@ -255,67 +260,4 @@ body.page {
   .fast-scroll-thumb {
     right: 4px;
   }
-}
-
-/* ========================= */
-/*   TRIGGER GLOW (SLANG)    */
-/* ========================= */
-
-.grid-item--trigger::before {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: 0;
-  pointer-events: none;
-  background: conic-gradient(
-    from 0deg,
-    rgba(255,255,255,0) 0deg,
-    rgba(255,255,255,0.6) 90deg,
-    rgba(255,255,255,0) 180deg,
-    rgba(255,255,255,0.6) 270deg,
-    rgba(255,255,255,0) 360deg
-  );
-  mask: 
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
-  padding: 2px;
-  animation: triggerGlowSpin 6s linear infinite;
-  opacity: 0.65;
-}
-
-@keyframes triggerGlowSpin {
-  100% { transform: rotate(360deg); }
-}
-/* ========================= */
-/*     CLEAN CHAOS (v1)      */
-/* ========================= */
-
-.grid-item,
-.grid-item--trigger {
-  opacity: 1;
-  transition:
-    transform 1200ms cubic-bezier(.22,1.2,.4,1),
-    opacity 300ms ease-out;
-}
-
-/* CHAOS STATE */
-.grid-item.chaos,
-.grid-item--trigger.chaos {
-  transform:
-    translate(
-      calc((var(--randX) - 0.5) * 120px),
-      calc((var(--randY) - 0.5) * 120px)
-    )
-    rotate(calc((var(--randR) - 0.5) * 70deg))
-    scale(calc(0.9 + var(--randS) * 0.25));
-}
-
-/* SNAP STATE */
-.grid-item.snap,
-.grid-item--trigger.snap {
-  transform: translate(0,0) rotate(0deg) scale(1);
-  opacity: 1;
-  animation: none;
 }
