@@ -26,23 +26,38 @@ title: ARNOLOOG
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const items = document.querySelectorAll(".home-grid .grid-item, .home-grid .grid-item--trigger");
+  const grid = document.querySelector(".home-grid");
+  const items = grid.querySelectorAll(".grid-item, .grid-item--trigger");
 
-  // eerste 9 items krijgen chaos
+  // ======= EXTREME CHAOS PER ROLL =======
+  // We gebruiken 15 items per roll voor chaos
+  // rolls worden achter elkaar gezet, dus we detecteren boundaries
+  
+  const CHAOS_PER_ROLL = 15;
+  let index = 0;
+
+  // Bepaal hoeveel items per roll (jouw structuur gebruikt rolls achter elkaar)
+  // Dus we geven elke 15 items chaos.
   items.forEach((item, i) => {
-    if (i < 9) {
+    if (i % CHAOS_PER_ROLL < CHAOS_PER_ROLL) {
       item.style.setProperty("--randX", Math.random());
       item.style.setProperty("--randY", Math.random());
       item.style.setProperty("--randR", Math.random());
+      item.style.setProperty("--randS", Math.random());
     }
   });
 
+  // ======= SCROLL DELAY TOT PUZZEL SAMENKLIKT =======
   let activated = false;
-  window.addEventListener("scroll", () => {
-    if (!activated) {
+  const SCROLL_TRIGGER = 180; // iets verder scrollen
+
+  const onScroll = () => {
+    if (!activated && window.scrollY > SCROLL_TRIGGER) {
       activated = true;
-      document.querySelector(".home-grid")?.classList.add("ready");
+      grid.classList.add("ready");
     }
-  });
+  };
+
+  window.addEventListener("scroll", onScroll);
 });
 </script>
