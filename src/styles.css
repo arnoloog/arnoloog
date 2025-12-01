@@ -45,6 +45,7 @@ body.page {
   letter-spacing: 0.2em;
   text-transform: uppercase;
   font-size: 0.9rem;
+  color: #ffffff;
 }
 
 .nav a {
@@ -128,16 +129,11 @@ body.page {
   opacity: 1;
 }
 
-/* zachte pulse om de zoveel tijd */
+/* zacht pulse effect */
 
 @keyframes triggerPulse {
-  0%,
-  100% {
-    opacity: 0;
-  }
-  40% {
-    opacity: 1;
-  }
+  0%, 100% { opacity: 0; }
+  45% { opacity: 1; }
 }
 
 .grid-item--trigger {
@@ -239,7 +235,7 @@ body.page {
 }
 
 /* ========================= */
-/*        RESPONSIVE         */
+/*       RESPONSIVE          */
 /* ========================= */
 
 @media (max-width: 640px) {
@@ -259,4 +255,58 @@ body.page {
   .fast-scroll-thumb {
     right: 4px;
   }
+}
+
+/* ========================= */
+/*   TRIGGER GLOW (SLANG)    */
+/* ========================= */
+
+.grid-item--trigger::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 0;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255,255,255,0) 0deg,
+    rgba(255,255,255,0.6) 90deg,
+    rgba(255,255,255,0) 180deg,
+    rgba(255,255,255,0.6) 270deg,
+    rgba(255,255,255,0) 360deg
+  );
+  mask: 
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  padding: 2px;
+  animation: triggerGlowSpin 6s linear infinite;
+  opacity: 0.65;
+}
+
+@keyframes triggerGlowSpin {
+  100% { transform: rotate(360deg); }
+}
+
+/* ========================= */
+/*    PUZZLE CHAOS INTRO     */
+/* ========================= */
+
+.home-grid .grid-item,
+.home-grid .grid-item--trigger {
+  opacity: 0.6;
+  transform: translate(
+    calc((var(--randX) - 0.5) * 50px),
+    calc((var(--randY) - 0.5) * 50px)
+  )
+  rotate(calc((var(--randR) - 0.5) * 24deg));
+  transition: transform 800ms cubic-bezier(.21,1.11,.81,.99),
+              opacity 500ms ease-out;
+}
+
+.home-grid.ready .grid-item,
+.home-grid.ready .grid-item--trigger {
+  opacity: 1;
+  transform: translate(0,0) rotate(0deg);
 }
