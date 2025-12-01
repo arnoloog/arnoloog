@@ -26,38 +26,70 @@ title: ARNOLOOG
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const grid = document.querySelector(".home-grid");
-  const items = grid.querySelectorAll(".grid-item, .grid-item--trigger");
 
-  // ======= EXTREME CHAOS PER ROLL =======
-  // We gebruiken 15 items per roll voor chaos
-  // rolls worden achter elkaar gezet, dus we detecteren boundaries
+  const grid = document.querySelector(".home-grid");
+  const items = [...grid.querySelectorAll(".grid-item, .grid-item--trigger")];
   
   const CHAOS_PER_ROLL = 15;
-  let index = 0;
+  const SCROLL_TRIGGER = 200; 
+  let rollStartIndexes = [];
 
-  // Bepaal hoeveel items per roll (jouw structuur gebruikt rolls achter elkaar)
-  // Dus we geven elke 15 items chaos.
-  items.forEach((item, i) => {
-    if (i % CHAOS_PER_ROLL < CHAOS_PER_ROLL) {
-      item.style.setProperty("--randX", Math.random());
-      item.style.setProperty("--randY", Math.random());
-      item.style.setProperty("--randR", Math.random());
-      item.style.setProperty("--randS", Math.random());
-    }
+  // bepaal roll boundaries (roll1: 0-14, roll2: 15-29,...)
+  for (let i = 0; i < items.length; i += CHAOS_PER_ROLL) {
+    rollStartIndexes.push(i);
+  }
+
+  // random waarden toevoegen
+  items.forEach((item) => {
+    item.style.setProperty("--randX", Math.random());
+    item.style.setProperty("--randY", Math.random());
+    item.style.setProperty("--randR", Math.random());
+    item.style.setProperty("--randS", Math.random());
   });
 
-  // ======= SCROLL DELAY TOT PUZZEL SAMENKLIKT =======
-  let activated = false;
-  const SCROLL_TRIGGER = 180; // iets verder scrollen
+  // observe each roll-section
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
 
-  const onScroll = () => {
-    if (!activated && window.scrollY > SCROLL_TRIGGER) {
-      activated = true;
-      grid.classList.add("ready");
-    }
-  };
+      const start = parseInt(entry.target.dataset.start);
+      const end = start + CHAOS_PER_ROLL;
 
-  window.addEventListener("scroll", onScroll);
+      // CHAOS ON
+      for (let i = start; i < end; i++) {
+        const item = items[i];
+        if (!item) continue;
+        item.classList.add("chaos");
+      }
+
+      // SNAP after scroll
+      const snapCheck = () => {
+        if (window.scrollY > SCROLL_TRIGGER) {
+          for (let i = start; i < end; i++) {
+            const item = items[i];
+            if (!item) continue;
+            item.classList.remove("chaos");
+            item.classList.add("snap");
+          }
+          window.removeEventListener("scroll", snapCheck);
+        }
+      };
+
+      window.addEventListener("scroll", snapCheck, { passive: true });
+    });
+  }, { threshold: 0.2 });
+
+  // maak "roll containers" virtueel
+  rollStartIndexes.forEach((startIndex) => {
+    const marker = document.createElement("div");
+    marker.dataset.start = startIndex;
+    marker.style.position = "absolute";
+    marker.style.marginTop = `${items[startIndex].offsetTop}px`;
+    marker.style.height = "1px";
+
+    grid.appendChild(marker);
+    observer.observe(marker);
+  });
+
 });
 </script>
