@@ -41,13 +41,17 @@ body.page {
   justify-content: space-between;
 }
 
-.logo {
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  font-size: 1.05rem;
-  color: #ffffff;
+.logo{
+  color: #fff;
   text-decoration: none;
+  text-transform: uppercase;
+
+  /* typografie zoals je voorbeeld */
+  font-family: "Arial Black", Arial, Helvetica, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-weight: 800;
+  font-size: 1.12rem;
+  letter-spacing: 0.08em;
+
   display: inline-block;
 }
 
@@ -248,12 +252,12 @@ body.page {
     right: 4px;
   }
 }
-/* ===== Hangend logo ===== */
+/* ===== Hangend logo (final) ===== */
 .logo--hang{
   position: relative;
   display: inline-flex;
-  gap: .12em;
-  padding-top: 1.15em;
+  gap: .18em;
+  padding-top: 1.35em;  /* ruimte voor waslijn + knijpers */
   line-height: 1;
 }
 
@@ -261,75 +265,81 @@ body.page {
 .logo--hang::before{
   content:"";
   position:absolute;
-  left:-.6em;
-  right:-.6em;
+  left:-.7em;
+  right:-.7em;
   top:.10em;
-  height: 1.1em;
-  opacity: .9;
+  height: 1.2em;
+  opacity: .95;
 
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100% 100%;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 30'%3E%3Cpath d='M2 6 Q100 28 198 6' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:100% 100%;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 34'%3E%3Cpath d='M3 7 Q110 30 217 7' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
-/* letters */
-.logo__letter{
+/* elk letterblok = “hanger” (volgt de boog) */
+.hang{
   position: relative;
   display: inline-block;
-  transform-origin: 50% 0%;
-  animation: sway 6s ease-in-out infinite;
-  will-change: transform;
-
-  /* wasknijper-hoogte per letter (boog volgen) */
-  --pinY: 0px;
+  transform: translateY(var(--drop, 0px));
 }
 
-/* wasknijper: klein driehoekje */
-.logo__letter::before{
+/* letter zelf: schommelt alsof hij aan de knijper hangt */
+.char{
+  position: relative;
+  display: inline-block;
+  transform-origin: 50% -16px;      /* hangpunt boven de letter */
+  animation: sway 6.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* knijper: minimalistisch maar herkenbaar (V-vorm) */
+.hang::before,
+.hang::after{
   content:"";
   position:absolute;
   left:50%;
-  top: calc(-.70em + var(--pinY));
-  width: .42em;
-  height: .28em;
+  top:-.82em;                      /* precies op de waslijn */
+  width:.16em;
+  height:.60em;
   background: var(--accent);
-  clip-path: polygon(50% 100%, 0 0, 100% 0);
-  transform: translateX(-50%);
-  opacity: .95;
+  opacity:.95;
 }
 
-/* wind-schommelen met pauzes (niet continu) */
+.hang::before{ transform: translateX(-50%) rotate(-12deg); }
+.hang::after { transform: translateX(-50%) rotate( 12deg); }
+
+/* wind: beweging met pauzes (niet continu) */
 @keyframes sway{
-  0%   { transform: rotate(0deg) translateY(0px); }
-  12%  { transform: rotate(-2.2deg) translateY(1px); }
-  22%  { transform: rotate(0deg) translateY(0px); }
-  55%  { transform: rotate(0deg) translateY(0px); }  /* lange pauze */
-  68%  { transform: rotate(2.2deg) translateY(1px); }
-  78%  { transform: rotate(0deg) translateY(0px); }
-  100% { transform: rotate(0deg) translateY(0px); }
+  0%   { transform: rotate(0deg); }
+  10%  { transform: rotate(-1.8deg); }
+  20%  { transform: rotate(0deg); }
+  55%  { transform: rotate(0deg); }      /* pauze */
+  68%  { transform: rotate(1.9deg); }
+  78%  { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
 }
 
-/* variatie: timing per letter */
-.logo__letter:nth-child(1){ animation-delay:-.3s; animation-duration:6.4s; }
-.logo__letter:nth-child(3){ animation-delay:-1.1s; animation-duration:5.4s; }
-.logo__letter:nth-child(4){ animation-delay:-.6s; animation-duration:7.0s; }
-.logo__letter:nth-child(6){ animation-delay:-.9s; animation-duration:6.2s; }
-.logo__letter:nth-child(8){ animation-delay:-1.4s; animation-duration:5.8s; }
+/* boog-curve: uiteinden hoger, midden lager */
+.hang--1{ --drop: 0px; }
+.hang--2{ --drop: 1px; }
+.hang--3{ --drop: 4px; }
+.hang--4{ --drop: 7px; }
+.hang--5{ --drop: 8px; }
+.hang--6{ --drop: 6px; }
+.hang--7{ --drop: 2px; }
+.hang--8{ --drop: 0px; }
 
-/* sommige letters stil */
-.logo__letter:nth-child(2),
-.logo__letter:nth-child(5),
-.logo__letter:nth-child(7){
+/* niet alles beweegt: echte “wind” */
+.hang--2 .char,
+.hang--5 .char,
+.hang--7 .char{
   animation: none;
 }
 
-/* boog volgen: uiteinden hoger, midden lager */
-.logo__letter:nth-child(1){ --pinY: -6px; }
-.logo__letter:nth-child(2){ --pinY: -5px; }
-.logo__letter:nth-child(3){ --pinY: -2px; }
-.logo__letter:nth-child(4){ --pinY:  2px; }
-.logo__letter:nth-child(5){ --pinY:  3px; }
-.logo__letter:nth-child(6){ --pinY: -1px; }
-.logo__letter:nth-child(7){ --pinY: -4px; }
-.logo__letter:nth-child(8){ --pinY: -6px; }
+/* extra random: andere tempo’s */
+.hang--1 .char{ animation-duration: 7.1s; animation-delay:-.4s; }
+.hang--3 .char{ animation-duration: 5.9s; animation-delay:-1.2s; }
+.hang--4 .char{ animation-duration: 8.0s; animation-delay:-.7s; }
+.hang--6 .char{ animation-duration: 6.6s; animation-delay:-.9s; }
+.hang--8 .char{ animation-duration: 6.1s; animation-delay:-1.4s; }
