@@ -12,10 +12,19 @@
 
   <body class="page">
     <header class="site-header">
-      <div class="site-header__inner">
+      <div class="site-header__inner site-header__inner--centered">
 
-        <!-- LOGO -->
-        <a href="{{ '/' | url }}" class="logo logo--hang" aria-label="ARNOLOOG">
+        <!-- GRID ICON (LEFT) -->
+        <nav class="nav nav--icons nav--left">
+          <a href="{{ '/' | url }}" aria-label="Grid" class="nav-icon nav-icon--grid">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M3 9h18M3 15h18M9 3v18M15 3v18"></path>
+            </svg>
+          </a>
+        </nav>
+
+        <!-- LOGO (CENTER) -->
+        <a href="{{ '/' | url }}" class="logo logo--hang logo--center" aria-label="ARNOLOOG">
           <span class="hang hang--1"><span class="char">A</span></span>
           <span class="hang hang--2"><span class="char">R</span></span>
           <span class="hang hang--3"><span class="char">N</span></span>
@@ -26,14 +35,8 @@
           <span class="hang hang--8"><span class="char">G</span></span>
         </a>
 
-        <!-- NAV (icons) -->
-        <nav class="nav nav--icons">
-          <a href="{{ '/' | url }}" aria-label="Grid" class="nav-icon nav-icon--grid">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="M3 9h18M3 15h18M9 3v18M15 3v18"></path>
-            </svg>
-          </a>
-
+        <!-- ROLLS ICON (RIGHT) -->
+        <nav class="nav nav--icons nav--right">
           <a href="{{ '/rolls/' | url }}" aria-label="Rolls" class="nav-icon nav-icon--rolls">
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <ellipse cx="12" cy="6" rx="7" ry="3"></ellipse>
