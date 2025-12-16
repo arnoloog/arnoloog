@@ -253,22 +253,24 @@ body.page {
   position: relative;
   display: inline-flex;
   gap: .12em;
-  padding-top: .95em;
+  padding-top: 1.15em;
   line-height: 1;
 }
 
-/* gebogen waslijn */
+/* echte gebogen waslijn (SVG) */
 .logo--hang::before{
   content:"";
   position:absolute;
-  left:-.5em;
-  right:-.5em;
-  top:.42em;
-  height:2px;
-  background: var(--accent);
-  border-radius: 0 0 999px 999px;
-  opacity:.85;
-  transform: rotate(-2deg);
+  left:-.6em;
+  right:-.6em;
+  top:.10em;
+  height: 1.1em;
+  opacity: .9;
+
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 30'%3E%3Cpath d='M2 6 Q100 28 198 6' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
 /* letters */
@@ -276,41 +278,45 @@ body.page {
   position: relative;
   display: inline-block;
   transform-origin: 50% 0%;
-  animation: hang 5.8s ease-in-out infinite;
+  animation: sway 4.6s ease-in-out infinite;
+  will-change: transform;
 }
 
-/* V-tjes (abstracte wasknijpers) */
+/* V-tjes */
 .logo__letter::before{
   content:"";
   position:absolute;
   left:50%;
-  top:-.52em;
-  width:.34em;
-  height:.24em;
+  top:-.62em;
+  width:.32em;
+  height:.22em;
   border-left:2px solid var(--accent);
   border-right:2px solid var(--accent);
   transform: translateX(-50%);
   opacity:.95;
 }
 
-/* zacht schommelen in de wind */
-@keyframes hang{
-  0%   { transform: rotate(-0.8deg); }
-  50%  { transform: rotate( 0.8deg); }
-  100% { transform: rotate(-0.8deg); }
+/* wind-schommelen (zichtbaar, maar nog clean) */
+@keyframes sway{
+  0%   { transform: rotate(-2.2deg) translateY(0px); }
+  25%  { transform: rotate( 1.0deg) translateY(1px); }
+  50%  { transform: rotate( 2.2deg) translateY(0px); }
+  75%  { transform: rotate(-1.0deg) translateY(1px); }
+  100% { transform: rotate(-2.2deg) translateY(0px); }
 }
 
-/* timing & faseverschil per letter */
-.logo__letter:nth-child(1){ animation-delay:-.4s; animation-duration:6.2s; }
-.logo__letter:nth-child(2){ animation: none; }               /* stil */
-.logo__letter:nth-child(3){ animation-delay:-1.1s; animation-duration:5.4s; }
-.logo__letter:nth-child(4){ animation-delay:-.6s; animation-duration:7.1s; }
-.logo__letter:nth-child(5){ animation: none; }               /* stil */
-.logo__letter:nth-child(6){ animation-delay:-.9s; animation-duration:6.6s; }
-.logo__letter:nth-child(7){ animation: none; }               /* stil */
-.logo__letter:nth-child(8){ animation-delay:-1.3s; animation-duration:5.8s; }
-
-/* respecteer accessibility */
-@media (prefers-reduced-motion: reduce){
-  .logo__letter{ animation: none; }
+/* random feel per letter (niet allemaal bewegen) */
+.logo__letter:nth-child(2),
+.logo__letter:nth-child(5),
+.logo__letter:nth-child(7){
+  animation: none; /* stil */
 }
+
+.logo__letter:nth-child(1){ animation-delay:-.3s; animation-duration:5.6s; }
+.logo__letter:nth-child(3){ animation-delay:-1.1s; animation-duration:4.7s; }
+.logo__letter:nth-child(4){ animation-delay:-.6s; animation-duration:6.2s; }
+.logo__letter:nth-child(6){ animation-delay:-.9s; animation-duration:5.4s; }
+.logo__letter:nth-child(8){ animation-delay:-1.4s; animation-duration:4.9s; }
+
+/* BELANGRIJK: haal reduce-motion override weg (anders kan alles stilvallen) */
+/* (dus géén @media (prefers-reduced-motion: reduce) blok hier) */
