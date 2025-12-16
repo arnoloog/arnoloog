@@ -341,3 +341,32 @@ body.page {
 .hang--4 .char{ animation-duration: 8.0s; animation-delay:-.7s; }
 .hang--6 .char{ animation-duration: 6.6s; animation-delay:-.9s; }
 .hang--8 .char{ animation-duration: 6.2s; animation-delay:-1.4s; }
+
+/* ===== NAV ICONS ===== */
+.nav--icons{
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-icon{
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+
+.nav-icon svg{
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
+.nav-icon:hover{
+  color: var(--fg);
+}
