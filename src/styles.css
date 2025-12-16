@@ -257,18 +257,18 @@ body.page {
   line-height: 1;
 }
 
-/* waslijn */
+/* gebogen waslijn */
 .logo--hang::before{
   content:"";
   position:absolute;
-  left:-.35em;
-  right:-.35em;
-  top:.28em;
+  left:-.5em;
+  right:-.5em;
+  top:.42em;
   height:2px;
   background: var(--accent);
-  border-radius: 999px;
-  opacity:.9;
-  transform: rotate(-1deg);
+  border-radius: 0 0 999px 999px;
+  opacity:.85;
+  transform: rotate(-2deg);
 }
 
 /* letters */
@@ -276,10 +276,10 @@ body.page {
   position: relative;
   display: inline-block;
   transform-origin: 50% 0%;
-  animation: hang 3.2s ease-in-out infinite;
+  animation: hang 5.8s ease-in-out infinite;
 }
 
-/* V-tjes (klein, abstract) */
+/* V-tjes (abstracte wasknijpers) */
 .logo__letter::before{
   content:"";
   position:absolute;
@@ -293,22 +293,24 @@ body.page {
   opacity:.95;
 }
 
-/* bengelen */
+/* zacht schommelen in de wind */
 @keyframes hang{
-  0%,100% { transform: translateY(0) rotate(-1deg); }
-  50%     { transform: translateY(2px) rotate(1.2deg); }
+  0%   { transform: rotate(-0.8deg); }
+  50%  { transform: rotate( 0.8deg); }
+  100% { transform: rotate(-0.8deg); }
 }
 
-/* variatie per letter */
-.logo__letter:nth-child(1){ animation-delay:-.2s;  transform: rotate(-1.2deg); }
-.logo__letter:nth-child(2){ animation-delay:-1.0s; transform: rotate( .8deg); }
-.logo__letter:nth-child(3){ animation-delay:-.6s;  transform: rotate(-.6deg); }
-.logo__letter:nth-child(4){ animation-delay:-1.3s; transform: rotate( 1.0deg); }
-.logo__letter:nth-child(5){ animation-delay:-.35s; transform: rotate(-.9deg); }
-.logo__letter:nth-child(6){ animation-delay:-.85s; transform: rotate( .6deg); }
-.logo__letter:nth-child(7){ animation-delay:-.15s; transform: rotate(-.7deg); }
-.logo__letter:nth-child(8){ animation-delay:-1.45s; transform: rotate( .9deg); }
+/* timing & faseverschil per letter */
+.logo__letter:nth-child(1){ animation-delay:-.4s; animation-duration:6.2s; }
+.logo__letter:nth-child(2){ animation: none; }               /* stil */
+.logo__letter:nth-child(3){ animation-delay:-1.1s; animation-duration:5.4s; }
+.logo__letter:nth-child(4){ animation-delay:-.6s; animation-duration:7.1s; }
+.logo__letter:nth-child(5){ animation: none; }               /* stil */
+.logo__letter:nth-child(6){ animation-delay:-.9s; animation-duration:6.6s; }
+.logo__letter:nth-child(7){ animation: none; }               /* stil */
+.logo__letter:nth-child(8){ animation-delay:-1.3s; animation-duration:5.8s; }
 
+/* respecteer accessibility */
 @media (prefers-reduced-motion: reduce){
   .logo__letter{ animation: none; }
 }
