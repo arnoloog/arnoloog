@@ -301,7 +301,7 @@ body.page {
 .char{
   position: relative;
   display: inline-block;
-  margin-top: -0.08em;      /* trekt letter omhoog tegen de pin */
+  margin-top: -0.18em;      /* trekt letter omhoog tegen de pin */
   transform-origin: 50% -14px;
   animation: sway 6.6s ease-in-out infinite;
   will-change: transform;
