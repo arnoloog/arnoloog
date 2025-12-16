@@ -278,45 +278,58 @@ body.page {
   position: relative;
   display: inline-block;
   transform-origin: 50% 0%;
-  animation: sway 4.6s ease-in-out infinite;
+  animation: sway 6s ease-in-out infinite;
   will-change: transform;
+
+  /* wasknijper-hoogte per letter (boog volgen) */
+  --pinY: 0px;
 }
 
-/* V-tjes */
+/* wasknijper: klein driehoekje */
 .logo__letter::before{
   content:"";
   position:absolute;
   left:50%;
-  top:-.62em;
-  width:.32em;
-  height:.22em;
-  border-left:2px solid var(--accent);
-  border-right:2px solid var(--accent);
+  top: calc(-.70em + var(--pinY));
+  width: .42em;
+  height: .28em;
+  background: var(--accent);
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
   transform: translateX(-50%);
-  opacity:.95;
+  opacity: .95;
 }
 
-/* wind-schommelen (zichtbaar, maar nog clean) */
+/* wind-schommelen met pauzes (niet continu) */
 @keyframes sway{
-  0%   { transform: rotate(-2.2deg) translateY(0px); }
-  25%  { transform: rotate( 1.0deg) translateY(1px); }
-  50%  { transform: rotate( 2.2deg) translateY(0px); }
-  75%  { transform: rotate(-1.0deg) translateY(1px); }
-  100% { transform: rotate(-2.2deg) translateY(0px); }
+  0%   { transform: rotate(0deg) translateY(0px); }
+  12%  { transform: rotate(-2.2deg) translateY(1px); }
+  22%  { transform: rotate(0deg) translateY(0px); }
+  55%  { transform: rotate(0deg) translateY(0px); }  /* lange pauze */
+  68%  { transform: rotate(2.2deg) translateY(1px); }
+  78%  { transform: rotate(0deg) translateY(0px); }
+  100% { transform: rotate(0deg) translateY(0px); }
 }
 
-/* random feel per letter (niet allemaal bewegen) */
+/* variatie: timing per letter */
+.logo__letter:nth-child(1){ animation-delay:-.3s; animation-duration:6.4s; }
+.logo__letter:nth-child(3){ animation-delay:-1.1s; animation-duration:5.4s; }
+.logo__letter:nth-child(4){ animation-delay:-.6s; animation-duration:7.0s; }
+.logo__letter:nth-child(6){ animation-delay:-.9s; animation-duration:6.2s; }
+.logo__letter:nth-child(8){ animation-delay:-1.4s; animation-duration:5.8s; }
+
+/* sommige letters stil */
 .logo__letter:nth-child(2),
 .logo__letter:nth-child(5),
 .logo__letter:nth-child(7){
-  animation: none; /* stil */
+  animation: none;
 }
 
-.logo__letter:nth-child(1){ animation-delay:-.3s; animation-duration:5.6s; }
-.logo__letter:nth-child(3){ animation-delay:-1.1s; animation-duration:4.7s; }
-.logo__letter:nth-child(4){ animation-delay:-.6s; animation-duration:6.2s; }
-.logo__letter:nth-child(6){ animation-delay:-.9s; animation-duration:5.4s; }
-.logo__letter:nth-child(8){ animation-delay:-1.4s; animation-duration:4.9s; }
-
-/* BELANGRIJK: haal reduce-motion override weg (anders kan alles stilvallen) */
-/* (dus géén @media (prefers-reduced-motion: reduce) blok hier) */
+/* boog volgen: uiteinden hoger, midden lager */
+.logo__letter:nth-child(1){ --pinY: -6px; }
+.logo__letter:nth-child(2){ --pinY: -5px; }
+.logo__letter:nth-child(3){ --pinY: -2px; }
+.logo__letter:nth-child(4){ --pinY:  2px; }
+.logo__letter:nth-child(5){ --pinY:  3px; }
+.logo__letter:nth-child(6){ --pinY: -1px; }
+.logo__letter:nth-child(7){ --pinY: -4px; }
+.logo__letter:nth-child(8){ --pinY: -6px; }
