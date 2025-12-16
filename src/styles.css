@@ -252,85 +252,83 @@ body.page {
     right: 4px;
   }
 }
-/* ===== Hangend logo (final) ===== */
+/* ===== Hangend logo (ultra minimal, klopt visueel) ===== */
 .logo--hang{
   position: relative;
   display: inline-flex;
-  gap: .18em;
-  padding-top: 1.35em;  /* ruimte voor waslijn + knijpers */
+  gap: .14em;
+  padding-top: 1.35em;  /* ruimte voor boog + streepjes */
   line-height: 1;
 }
 
-/* echte gebogen waslijn (SVG) */
+/* boog: breder dan letters (links/rechts voorbij tekst) */
 .logo--hang::before{
   content:"";
   position:absolute;
-  left:-.7em;
-  right:-.7em;
-  top:.10em;
-  height: 1.2em;
+  left:-1.35em;     /* verder dan vroeger */
+  right:-1.35em;    /* verder dan vroeger */
+  top:.08em;
+  height: 1.25em;
   opacity: .95;
 
   background-repeat:no-repeat;
   background-position:center;
   background-size:100% 100%;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 34'%3E%3Cpath d='M3 7 Q110 30 217 7' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 34'%3E%3Cpath d='M3 7 Q120 31 237 7' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
-/* elk letterblok = “hanger” (volgt de boog) */
+/* elke letter “hangt” mee met de boog */
 .hang{
   position: relative;
   display: inline-block;
   transform: translateY(var(--drop, 0px));
 }
 
-/* letter zelf: schommelt alsof hij aan de knijper hangt */
+/* het streepje (wasknijper) dat de boog kruist */
+.hang::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:-.86em;          /* iets naar beneden zodat het door de boog gaat */
+  width: 2px;
+  height: .95em;       /* lang genoeg om de boog te kruisen */
+  background: var(--accent);
+  transform: translateX(-50%) rotate(-10deg);
+  opacity: .95;
+}
+
+/* letter hangt onder het streepje */
 .char{
   position: relative;
   display: inline-block;
-  transform-origin: 50% -16px;      /* hangpunt boven de letter */
+  padding-top: .22em;        /* dit maakt het “hangen” zichtbaar */
+  transform-origin: 50% -18px;
   animation: sway 6.2s ease-in-out infinite;
   will-change: transform;
 }
 
-/* knijper: minimalistisch maar herkenbaar (V-vorm) */
-.hang::before,
-.hang::after{
-  content:"";
-  position:absolute;
-  left:50%;
-  top:-.82em;                      /* precies op de waslijn */
-  width:.16em;
-  height:.60em;
-  background: var(--accent);
-  opacity:.95;
-}
-
-.hang::before{ transform: translateX(-50%) rotate(-12deg); }
-.hang::after { transform: translateX(-50%) rotate( 12deg); }
-
 /* wind: beweging met pauzes (niet continu) */
 @keyframes sway{
   0%   { transform: rotate(0deg); }
-  10%  { transform: rotate(-1.8deg); }
-  20%  { transform: rotate(0deg); }
-  55%  { transform: rotate(0deg); }      /* pauze */
-  68%  { transform: rotate(1.9deg); }
-  78%  { transform: rotate(0deg); }
+  10%  { transform: rotate(-1.7deg); }
+  22%  { transform: rotate(0deg); }
+  58%  { transform: rotate(0deg); }   /* pauze */
+  70%  { transform: rotate(1.8deg); }
+  82%  { transform: rotate(0deg); }
   100% { transform: rotate(0deg); }
 }
 
 /* boog-curve: uiteinden hoger, midden lager */
 .hang--1{ --drop: 0px; }
-.hang--2{ --drop: 1px; }
-.hang--3{ --drop: 4px; }
-.hang--4{ --drop: 7px; }
-.hang--5{ --drop: 8px; }
-.hang--6{ --drop: 6px; }
-.hang--7{ --drop: 2px; }
+.hang--2{ --drop: 2px; }
+.hang--3{ --drop: 6px; }
+.hang--4{ --drop: 10px; }
+.hang--5{ --drop: 11px; }
+.hang--6{ --drop: 8px; }
+.hang--7{ --drop: 3px; }
 .hang--8{ --drop: 0px; }
 
-/* niet alles beweegt: echte “wind” */
+/* niet alles beweegt: echte rust */
 .hang--2 .char,
 .hang--5 .char,
 .hang--7 .char{
@@ -338,8 +336,8 @@ body.page {
 }
 
 /* extra random: andere tempo’s */
-.hang--1 .char{ animation-duration: 7.1s; animation-delay:-.4s; }
-.hang--3 .char{ animation-duration: 5.9s; animation-delay:-1.2s; }
-.hang--4 .char{ animation-duration: 8.0s; animation-delay:-.7s; }
-.hang--6 .char{ animation-duration: 6.6s; animation-delay:-.9s; }
-.hang--8 .char{ animation-duration: 6.1s; animation-delay:-1.4s; }
+.hang--1 .char{ animation-duration: 7.0s; animation-delay:-.4s; }
+.hang--3 .char{ animation-duration: 5.8s; animation-delay:-1.2s; }
+.hang--4 .char{ animation-duration: 8.1s; animation-delay:-.7s; }
+.hang--6 .char{ animation-duration: 6.5s; animation-delay:-.9s; }
+.hang--8 .char{ animation-duration: 6.0s; animation-delay:-1.4s; }
