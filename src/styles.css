@@ -370,3 +370,22 @@ body.page {
 .nav-icon:hover{
   color: var(--fg);
 }
+
+/* ===== CENTERED HEADER LAYOUT ===== */
+.site-header__inner--centered{
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.nav--left{
+  justify-self: start;
+}
+
+.nav--right{
+  justify-self: end;
+}
+
+.logo--center{
+  justify-self: center;
+}
