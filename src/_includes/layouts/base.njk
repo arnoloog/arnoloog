@@ -6,20 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="ARNOLOOG – Analog photography.">
 
-    <link rel="stylesheet" href="{{ '/styles.css' | url }}">
+    <!-- cache-buster tijdens testen -->
+    <link rel="stylesheet" href="{{ '/styles.css?v=4' | url }}">
   </head>
 
   <body class="page">
     <header class="site-header">
       <div class="site-header__inner">
-       <a href="{{ '/' | url }}" class="logo logo--hang" aria-label="ARNOLOOG">
-  <span class="logo__letter">A</span><span class="logo__letter">R</span><span class="logo__letter">N</span><span class="logo__letter">O</span><span class="logo__letter">L</span><span class="logo__letter">O</span><span class="logo__letter">O</span><span class="logo__letter">G</span>
-</a>
 
+        <!-- LOGO -->
+        <a href="{{ '/' | url }}" class="logo logo--hang" aria-label="ARNOLOOG">
+          <span class="hang hang--1"><span class="char">A</span></span>
+          <span class="hang hang--2"><span class="char">R</span></span>
+          <span class="hang hang--3"><span class="char">N</span></span>
+          <span class="hang hang--4"><span class="char">O</span></span>
+          <span class="hang hang--5"><span class="char">L</span></span>
+          <span class="hang hang--6"><span class="char">O</span></span>
+          <span class="hang hang--7"><span class="char">O</span></span>
+          <span class="hang hang--8"><span class="char">G</span></span>
+        </a>
+
+        <!-- NAV -->
         <nav class="nav">
           <a href="{{ '/' | url }}">grid</a>
           <a href="{{ '/rolls/' | url }}">rolls</a>
         </nav>
+
       </div>
     </header>
 
@@ -32,7 +44,7 @@
     </footer>
 
     <script>
-      // simpele "snelle scroll" thumb rechts (Spotify-style)
+      // snelle scroll thumb rechts (Spotify-style)
       (function () {
         const thumb = document.querySelector(".fast-scroll-thumb");
         if (!thumb) return;
