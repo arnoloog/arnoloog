@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="ARNOLOOG – Analog photography.">
 
-    <!-- cache-buster tijdens testen -->
     <link rel="stylesheet" href="{{ '/styles.css?v=4' | url }}">
   </head>
 
@@ -17,8 +16,7 @@
         <!-- GRID ICON (LEFT) -->
         <nav class="nav nav--icons nav--left">
           <a href="{{ '/' | url }}" aria-label="Grid" class="nav-icon nav-icon--grid">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <!-- meer grid, minder hashtag -->
+            <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M3 8h18M3 16h18M8 3v18M16 3v18"></path>
             </svg>
           </a>
@@ -39,14 +37,18 @@
         <!-- ROLLS ICON (RIGHT) -->
         <nav class="nav nav--icons nav--right">
           <a href="{{ '/rolls/' | url }}" aria-label="Rolls" class="nav-icon nav-icon--rolls">
-            <!-- minimal film + rol, geen details -->
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <!-- film flap -->
-              <path d="M3 7h9c1.5 0 3 1.5 3 3v4c0 1.5-1.5 3-3 3H3z"></path>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
 
-              <!-- rol -->
-              <ellipse cx="17.5" cy="6.5" rx="3.5" ry="2"></ellipse>
-              <path d="M14 6.5v11c0 1.2 1.6 2 3.5 2s3.5-.8 3.5-2v-11"></path>
+              <!-- FILM (achtergrond, korter) -->
+              <path d="M3 8h6c1.2 0 2 1 2 2v4c0 1.2-.8 2-2 2H3z"></path>
+
+              <!-- CILINDER (voorgrond, meer volume) -->
+              <!-- top -->
+              <ellipse cx="15.5" cy="6.5" rx="4.2" ry="2.4"></ellipse>
+
+              <!-- body -->
+              <path d="M11.3 6.5v11.2c0 1.6 2 2.8 4.2 2.8s4.2-1.2 4.2-2.8V6.5"></path>
+
             </svg>
           </a>
         </nav>
@@ -63,7 +65,6 @@
     </footer>
 
     <script>
-      // snelle scroll thumb rechts (Spotify-style)
       (function () {
         const thumb = document.querySelector(".fast-scroll-thumb");
         if (!thumb) return;
@@ -72,18 +73,13 @@
           const h = window.innerHeight;
           const ratio = clientY / h;
           const maxScroll = document.documentElement.scrollHeight - h;
-          window.scrollTo({
-            top: maxScroll * ratio,
-            behavior: "auto",
-          });
+          window.scrollTo({ top: maxScroll * ratio, behavior: "auto" });
         }
 
         thumb.addEventListener("mousedown", (e) => {
           e.preventDefault();
           scrollToPosition(e.clientY);
-          function move(ev) {
-            scrollToPosition(ev.clientY);
-          }
+          function move(ev) { scrollToPosition(ev.clientY); }
           function up() {
             window.removeEventListener("mousemove", move);
             window.removeEventListener("mouseup", up);
@@ -91,27 +87,7 @@
           window.addEventListener("mousemove", move);
           window.addEventListener("mouseup", up);
         });
-
-        thumb.addEventListener(
-          "touchstart",
-          (e) => {
-            if (!e.touches.length) return;
-            function move(ev) {
-              if (!ev.touches.length) return;
-              scrollToPosition(ev.touches[0].clientY);
-            }
-            function end() {
-              window.removeEventListener("touchmove", move);
-              window.removeEventListener("touchend", end);
-            }
-            window.addEventListener("touchmove", move, { passive: true });
-            window.addEventListener("touchend", end);
-            scrollToPosition(e.touches[0].clientY);
-          },
-          { passive: true }
-        );
       })();
     </script>
   </body>
 </html>
-
