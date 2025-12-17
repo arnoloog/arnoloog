@@ -310,13 +310,17 @@ body.page {
 /* zachte wind met pauzes */
 @keyframes sway{
   0%   { transform: rotate(0deg); }
-  10%  { transform: rotate(-1.4deg); }
+  10%  { transform: rotate(-7.2deg); }
   22%  { transform: rotate(0deg); }
-  60%  { transform: rotate(0deg); }  /* pauze */
-  72%  { transform: rotate(1.5deg); }
-  84%  { transform: rotate(0deg); }
+
+  55%  { transform: rotate(0deg); }   /* langere rust */
+
+  68%  { transform: rotate(7.6deg); }
+  82%  { transform: rotate(0deg); }
+
   100% { transform: rotate(0deg); }
 }
+
 
 /* boog curve (kleine drops, want subtiel) */
 .hang--1{ --drop: 0px; }
