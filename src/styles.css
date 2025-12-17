@@ -345,6 +345,12 @@ body.page {
 .hang--4 .char{ animation-duration: 8.0s; animation-delay:-.7s; }
 .hang--6 .char{ animation-duration: 6.6s; animation-delay:-.9s; }
 .hang--8 .char{ animation-duration: 6.2s; animation-delay:-1.4s; }
+/* subtiele variatie in ophangpunt */
+.hang--1 .char{ transform-origin: 50% -15px; }
+.hang--3 .char{ transform-origin: 50% -13px; }
+.hang--4 .char{ transform-origin: 50% -16px; }
+.hang--6 .char{ transform-origin: 50% -14px; }
+.hang--8 .char{ transform-origin: 50% -15px; }
 
 /* ===== NAV ICONS ===== */
 .nav--icons{
