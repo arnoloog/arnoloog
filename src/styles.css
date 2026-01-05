@@ -116,21 +116,36 @@ body.page {
 /* ========================= */
 
 /*
-  Oud: opacity ademen (maakt de trigger net minder opvallend)
-  Nieuw: subtiele "presence" — mini zoom + brightness/contrast.
-  -> springt meer uit, blijft classy.
+  Doel:
+  - Geen scale (grid blijft strak)
+  - Duidelijker uitspringen via brightness/contrast (geen saturatie)
+  - Af en toe een micro “film jitter” (subtiel bewegen/draaien)
 */
-@keyframes photoBreath {
-  0%   { transform: scale(1);    filter: brightness(1) contrast(1); }
-  50%  { transform: scale(1.03); filter: brightness(1.12) contrast(1.06); }
-  100% { transform: scale(1);    filter: brightness(1) contrast(1); }
+
+@keyframes triggerPulse {
+  /* rustig ademen */
+  0%   { filter: brightness(0.92) contrast(1.06); transform: translate(0,0) rotate(0deg); }
+  22%  { filter: brightness(1.12) contrast(1.10); transform: translate(0,0) rotate(0deg); }
+  45%  { filter: brightness(0.96) contrast(1.06); transform: translate(0,0) rotate(0deg); }
+
+  /* kleine "jitter" burst — film mechaniek vibe */
+  50%  { filter: brightness(1.10) contrast(1.12); transform: translate(0,0) rotate(0deg); }
+  52%  { filter: brightness(1.14) contrast(1.14); transform: translate(0.6px,-0.4px) rotate(-0.35deg); }
+  54%  { filter: brightness(1.10) contrast(1.12); transform: translate(-0.4px,0.6px) rotate(0.28deg); }
+  56%  { filter: brightness(1.12) contrast(1.13); transform: translate(0.3px,-0.2px) rotate(-0.18deg); }
+  58%  { filter: brightness(1.06) contrast(1.10); transform: translate(0,0) rotate(0deg); }
+
+  /* terug rustig */
+  78%  { filter: brightness(0.95) contrast(1.06); transform: translate(0,0) rotate(0deg); }
+  100% { filter: brightness(0.92) contrast(1.06); transform: translate(0,0) rotate(0deg); }
 }
 
-/* Ademt enkel de foto zelf */
-.grid-item--trigger img {
-  animation: photoBreath 3.8s ease-in-out infinite;
-  will-change: transform, filter;
-  transition: none; /* voorkomt rare interactie met de algemene transition */
+.grid-item--trigger img{
+  animation: triggerPulse 4.6s ease-in-out infinite;
+  will-change: filter, transform;
+  transition: none;
+}
+
 }
 
 /* ========================= */
