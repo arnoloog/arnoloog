@@ -108,33 +108,44 @@ body.page {
 }
 
 /* ========================= */
-/*     SLIDE PUZZLE (HOME)   */
+/*   SLIDE PUZZLE (8 + BLANK)*/
 /* ========================= */
 
-.home-grid.is-puzzle .grid-item,
-.home-grid.is-puzzle .grid-item--trigger{
-  transform: translate(var(--sx, 0px), var(--sy, 0px));
-  animation: puzzleSolve var(--dur, 900ms) cubic-bezier(.55,0,1,1) forwards;
-  animation-delay: var(--delay, 0ms);
+/* tijdens puzzel: alleen de geselecteerde tiles krijgen dit (via JS) */
+.puzzle-active .puzzle-tile{
+  outline: 1px solid rgba(255,255,255,0.06);
+  outline-offset: -1px;
   will-change: transform;
 }
 
-/* subtiele outline zodat zwarte tiles zichtbaar blijven */
-.home-grid.is-puzzle .grid-item,
-.home-grid.is-puzzle .grid-item--trigger{
-  outline: 1px solid rgba(255,255,255,0.06);
-  outline-offset: -1px;
+/* blank = trigger tile: onzichtbaar + niet klikbaar tijdens puzzel */
+.puzzle-blank{
+  pointer-events: none;
 }
 
-@keyframes puzzleSolve{
-  to { transform: translate(0,0); }
+.puzzle-blank img{
+  opacity: 0 !important;
 }
 
-/* tijdens puzzel: trigger animatie UIT */
-.home-grid.is-puzzle .grid-item--trigger img{
+/* tijdens puzzel: triggerPulse uit (start pas na solve) */
+.puzzle-active .grid-item--trigger img{
   animation: none !important;
   filter: none !important;
   transform: none !important;
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .puzzle-active .puzzle-tile{
+    outline: none !important;
+    transform: none !important;
+  }
+  .puzzle-blank img{
+    opacity: 1 !important;
+  }
+  .puzzle-blank{
+    pointer-events: auto !important;
+  }
 }
 
 /* ========================= */
