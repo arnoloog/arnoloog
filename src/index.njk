@@ -26,70 +26,57 @@ title: ARNOLOOG
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
   const grid = document.querySelector(".home-grid");
-  const items = [...grid.querySelectorAll(".grid-item, .grid-item--trigger")];
-  
-  const CHAOS_PER_ROLL = 15;
-  const SCROLL_TRIGGER = 200; 
-  let rollStartIndexes = [];
+  if (!grid) return;
 
-  // bepaal roll boundaries (roll1: 0-14, roll2: 15-29,...)
-  for (let i = 0; i < items.length; i += CHAOS_PER_ROLL) {
-    rollStartIndexes.push(i);
-  }
+  // respect reduced motion
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-  // random waarden toevoegen
-  items.forEach((item) => {
-    item.style.setProperty("--randX", Math.random());
-    item.style.setProperty("--randY", Math.random());
-    item.style.setProperty("--randR", Math.random());
-    item.style.setProperty("--randS", Math.random());
+  const items = Array.from(grid.querySelectorAll(".grid-item, .grid-item--trigger"));
+  if (!items.length) return;
+
+  // stapgrootte (voelt als "puzzel move": 1-2 stappen)
+  const first = items[0].getBoundingClientRect();
+  const step = Math.max(14, Math.round(first.width * 0.20));
+
+  const n = items.length;
+  const easeInQuad = (t) => t * t; // traag begin -> sneller einde
+
+  // shuffle offsets + timing per tile
+  items.forEach((el, i) => {
+    const t = n === 1 ? 1 : i / (n - 1);
+    const accel = easeInQuad(t);
+
+    // alleen horizontaal OF verticaal, 1 of 2 stappen
+    const axis = Math.random() < 0.5 ? "x" : "y";
+    const steps = (Math.random() < 0.65 ? 1 : 2) * (Math.random() < 0.5 ? -1 : 1);
+
+    const sx = axis === "x" ? steps * step : 0;
+    const sy = axis === "y" ? steps * step : 0;
+
+    el.style.setProperty("--sx", `${sx}px`);
+    el.style.setProperty("--sy", `${sy}px`);
+
+    // timing: begin trager, einde sneller
+    const delay = 120 + Math.round(720 * accel);      // gaps groter in het begin
+    const dur   = 980 - Math.round(560 * t);          // duur korter naar het einde
+
+    el.style.setProperty("--delay", `${delay}ms`);
+    el.style.setProperty("--dur", `${dur}ms`);
   });
 
-  // observe each roll-section
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
+  // start puzzle solve
+  grid.classList.add("is-puzzle");
 
-      const start = parseInt(entry.target.dataset.start);
-      const end = start + CHAOS_PER_ROLL;
-
-      // CHAOS ON
-      for (let i = start; i < end; i++) {
-        const item = items[i];
-        if (!item) continue;
-        item.classList.add("chaos");
-      }
-
-      // SNAP after scroll
-      const snapCheck = () => {
-        if (window.scrollY > SCROLL_TRIGGER) {
-          for (let i = start; i < end; i++) {
-            const item = items[i];
-            if (!item) continue;
-            item.classList.remove("chaos");
-            item.classList.add("snap");
-          }
-          window.removeEventListener("scroll", snapCheck);
-        }
-      };
-
-      window.addEventListener("scroll", snapCheck, { passive: true });
+  // cleanup na afloop (zodat site daarna "stil" is)
+  window.setTimeout(() => {
+    grid.classList.remove("is-puzzle");
+    items.forEach(el => {
+      el.style.removeProperty("--sx");
+      el.style.removeProperty("--sy");
+      el.style.removeProperty("--delay");
+      el.style.removeProperty("--dur");
     });
-  }, { threshold: 0.2 });
-
-  // maak "roll containers" virtueel
-  rollStartIndexes.forEach((startIndex) => {
-    const marker = document.createElement("div");
-    marker.dataset.start = startIndex;
-    marker.style.position = "absolute";
-    marker.style.marginTop = `${items[startIndex].offsetTop}px`;
-    marker.style.height = "1px";
-
-    grid.appendChild(marker);
-    observer.observe(marker);
-  });
-
+  }, 1800);
 });
 </script>
