@@ -115,16 +115,22 @@ body.page {
 /*      TRIGGER BREATHING    */
 /* ========================= */
 
-/* Hele foto licht zacht op en vervaagt */
+/*
+  Oud: opacity ademen (maakt de trigger net minder opvallend)
+  Nieuw: subtiele "presence" — mini zoom + brightness/contrast.
+  -> springt meer uit, blijft classy.
+*/
 @keyframes photoBreath {
-  0%   { opacity: 1; }
-  50%  { opacity: 0.80; }
-  100% { opacity: 1; }
+  0%   { transform: scale(1);    filter: brightness(1) contrast(1); }
+  50%  { transform: scale(1.03); filter: brightness(1.12) contrast(1.06); }
+  100% { transform: scale(1);    filter: brightness(1) contrast(1); }
 }
 
 /* Ademt enkel de foto zelf */
 .grid-item--trigger img {
-  animation: photoBreath 4s ease-in-out infinite;
+  animation: photoBreath 3.8s ease-in-out infinite;
+  will-change: transform, filter;
+  transition: none; /* voorkomt rare interactie met de algemene transition */
 }
 
 /* ========================= */
@@ -252,6 +258,7 @@ body.page {
     right: 4px;
   }
 }
+
 /* ===== Hangend logo (micro pins + echt hangen) ===== */
 .logo--hang{
   position: relative;
@@ -321,7 +328,6 @@ body.page {
   100% { transform: rotate(0deg); }
 }
 
-
 /* boog curve (kleine drops, want subtiel) */
 .hang--1{ --drop: 0px; }
 .hang--2{ --drop: 1px; }
@@ -345,6 +351,7 @@ body.page {
 .hang--4 .char{ animation-duration: 8.0s; animation-delay:-.7s; }
 .hang--6 .char{ animation-duration: 6.6s; animation-delay:-.9s; }
 .hang--8 .char{ animation-duration: 6.2s; animation-delay:-1.4s; }
+
 /* subtiele variatie in ophangpunt */
 .hang--1 .char{ transform-origin: 50% -15px; }
 .hang--3 .char{ transform-origin: 50% -13px; }
