@@ -6,21 +6,18 @@ title: ARNOLOOG
 <section class="home">
   <div class="home-grid">
     {% for roll in photos.rolls %}
-      {# wrapper per roll zodat JS tiles kan groeperen #}
-      <div class="roll-block" data-roll="{{ roll.name }}" style="display: contents;">
-        {# omkeren zodat 01 onderaan zit #}
-        {% for item in roll.grid | reverse %}
-          {% if item.isTrigger %}
-            <a href="/rolls/{{ roll.name }}/" class="grid-item grid-item--trigger">
-              <img src="{{ item.src }}" loading="lazy" alt="">
-            </a>
-          {% else %}
-            <div class="grid-item">
-              <img src="{{ item.src }}" loading="lazy" alt="">
-            </div>
-          {% endif %}
-        {% endfor %}
-      </div>
+      {# binnen elke roll: omkeren zodat 01 onderaan zit #}
+      {% for item in roll.grid | reverse %}
+        {% if item.isTrigger %}
+          <a href="/rolls/{{ roll.name }}/" class="grid-item grid-item--trigger">
+            <img src="{{ item.src }}" loading="lazy" alt="">
+          </a>
+        {% else %}
+          <div class="grid-item">
+            <img src="{{ item.src }}" loading="lazy" alt="">
+          </div>
+        {% endif %}
+      {% endfor %}
     {% endfor %}
   </div>
 
@@ -28,145 +25,58 @@ title: ARNOLOOG
 </section>
 
 <script>
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
   const grid = document.querySelector(".home-grid");
   if (!grid) return;
+
+  // respect reduced motion
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-  const COLS = 3;
-  const wait = (ms) => new Promise(r => setTimeout(r, ms));
-  const neighbors3x3 = (i) => {
-    const res = [];
-    const r = Math.floor(i / COLS);
-    const c = i % COLS;
-    if (c > 0) res.push(i - 1);
-    if (c < COLS - 1) res.push(i + 1);
-    if (r > 0) res.push(i - COLS);
-    if (r < COLS - 1) res.push(i + COLS);
-    return res;
-  };
+  const items = Array.from(grid.querySelectorAll(".grid-item, .grid-item--trigger"));
+  if (!items.length) return;
 
-  // timing: traag -> snel
-  const durAt = (t) => Math.round(260 - 170 * t); // 260 -> 90
-  const gapAt = (t) => Math.round(210 - 150 * t); // 210 -> 60
+  // stapgrootte (voelt als "puzzel move": 1-2 stappen)
+  const first = items[0].getBoundingClientRect();
+  const step = Math.max(14, Math.round(first.width * 0.20));
 
-  const blocks = Array.from(grid.querySelectorAll(".roll-block"));
-  if (!blocks.length) return;
+  const n = items.length;
+  const easeInQuad = (t) => t * t; // traag begin -> sneller einde
 
-  grid.classList.add("puzzle-active");
+  // shuffle offsets + timing per tile
+  items.forEach((el, i) => {
+    const t = n === 1 ? 1 : i / (n - 1);
+    const accel = easeInQuad(t);
 
-  for (const block of blocks) {
-    const tiles = Array.from(block.querySelectorAll(".grid-item, .grid-item--trigger"));
-    if (!tiles.length) continue;
+    // alleen horizontaal OF verticaal, 1 of 2 stappen
+    const axis = Math.random() < 0.5 ? "x" : "y";
+    const steps = (Math.random() < 0.65 ? 1 : 2) * (Math.random() < 0.5 ? -1 : 1);
 
-    // Trigger tile (blank)
-    const blankEl = tiles.find(el => el.classList.contains("grid-item--trigger"));
-    if (!blankEl) continue;
+    const sx = axis === "x" ? steps * step : 0;
+    const sy = axis === "y" ? steps * step : 0;
 
-    // We willen: "laatste 3 grid foto's in MAP" skippen (zwart)
-    // Omdat je in template reverse doet, staan de laatste files nu VOORAAN in tiles.
-    // Dus: skip eerste 3 van de roll-block.
-    //
-    // Daarna nemen we de 8 grid tiles (rood) die er direct onder staan.
-    const nonTrigger = tiles.filter(el => !el.classList.contains("grid-item--trigger"));
+    el.style.setProperty("--sx", `${sx}px`);
+    el.style.setProperty("--sy", `${sy}px`);
 
-    // Safety: er moeten minstens 11 non-trigger zijn om 3 te skippen + 8 te nemen
-    if (nonTrigger.length < 11) continue;
+    // timing: begin trager, einde sneller
+    const delay = 120 + Math.round(720 * accel);      // gaps groter in het begin
+    const dur   = 980 - Math.round(560 * t);          // duur korter naar het einde
 
-    const reds = nonTrigger.slice(3, 3 + 8); // skip 3 zwarte, pak 8 rode
-    if (reds.length < 8) continue;
+    el.style.setProperty("--delay", `${delay}ms`);
+    el.style.setProperty("--dur", `${dur}ms`);
+  });
 
-    // Maak de 3x3 puzzelset: 8 rode + blank (trigger)
-    // Belangrijk: we moeten ook in DOM die 9 als een "cluster" behandelen.
-    const puzzleSet = [...reds, blankEl];
+  // start puzzle solve
+  grid.classList.add("is-puzzle");
 
-    // Markeer puzzle tiles voor CSS (outline, etc.)
-    puzzleSet.forEach(el => el.classList.add("puzzle-tile"));
-    blankEl.classList.add("puzzle-blank"); // trigger verborgen + niet klikbaar tijdens puzzel
-
-    // --- ORDER: we gaan een 3x3 maken met deze 9, en dan shuffle + solve ---
-    // We maken een "order" array van 9 nodes. Start = solved.
-    let order = puzzleSet.slice();
-
-    // Zet blank op het einde (rechtsonder) als startpositie (voelt als echte 8-puzzle)
-    // Als blank al niet op index 8 zit, swap hem erheen.
-    const blankTarget = 8;
-    const blankPos = order.indexOf(blankEl);
-    if (blankPos !== blankTarget) {
-      [order[blankPos], order[blankTarget]] = [order[blankTarget], order[blankPos]];
-    }
-
-    let blankIndex = order.indexOf(blankEl);
-
-    // Helper: render enkel deze 9 in de juiste DOM volgorde,
-    // zonder de rest van de roll-block omver te gooien.
-    function renderOrder() {
-      // We verwijderen de 9 nodes even uit de DOM en steken ze terug in de nieuwe volgorde.
-      // Omdat de roll-block display:contents is, bepaalt appendChild gewoon hun positie in de grid.
-      order.forEach(el => block.appendChild(el));
-    }
-
-    // --- SHUFFLE: random walk vanuit solved, moves bijhouden ---
-    const moves = [];
-    const shuffleMoves = 26; // beetje meer dan 22 voor "echter puzzelgevoel"
-    let prev = -1;
-
-    for (let k = 0; k < shuffleMoves; k++) {
-      const ns = neighbors3x3(blankIndex).filter(n => n !== prev);
-      const pick = ns[Math.floor(Math.random() * ns.length)];
-      moves.push(pick);
-      prev = blankIndex;
-
-      // swap blank met neighbor
-      [order[blankIndex], order[pick]] = [order[pick], order[blankIndex]];
-      blankIndex = pick;
-    }
-
-    // Zet shuffled toestand instant (geen animatie)
-    renderOrder();
-
-    // --- AUTO-SOLVE: reverse moves, 1 tile schuift per keer ---
-    for (let step = moves.length - 1; step >= 0; step--) {
-      const t = 1 - (step / Math.max(1, moves.length - 1)); // 0..1
-      const duration = durAt(t);
-      const gap = gapAt(t);
-
-      const from = moves[step]; // tile die in het gat schuift
-
-      // FIRST rects
-      const before = new Map();
-      order.forEach(el => before.set(el, el.getBoundingClientRect()));
-
-      // swap terug
-      [order[blankIndex], order[from]] = [order[from], order[blankIndex]];
-      blankIndex = from;
-
-      // DOM reorder
-      renderOrder();
-
-      // LAST + FLIP animate
-      order.forEach(el => {
-        const a = before.get(el);
-        const b = el.getBoundingClientRect();
-        const dx = a.left - b.left;
-        const dy = a.top - b.top;
-
-        if (dx === 0 && dy === 0) return;
-
-        el.style.transition = "none";
-        el.style.transform = `translate(${dx}px, ${dy}px)`;
-        el.getBoundingClientRect();
-        el.style.transition = `transform ${duration}ms cubic-bezier(.2, 1, .3, 1)`;
-        el.style.transform = "translate(0,0)";
-      });
-
-      await wait(duration + gap);
-    }
-
-    // Solved: trigger terug zichtbaar + klikbaar
-    blankEl.classList.remove("puzzle-blank");
-  }
-
-  grid.classList.remove("puzzle-active");
+  // cleanup na afloop (zodat site daarna "stil" is)
+  window.setTimeout(() => {
+    grid.classList.remove("is-puzzle");
+    items.forEach(el => {
+      el.style.removeProperty("--sx");
+      el.style.removeProperty("--sy");
+      el.style.removeProperty("--delay");
+      el.style.removeProperty("--dur");
+    });
+  }, 1800);
 });
 </script>
