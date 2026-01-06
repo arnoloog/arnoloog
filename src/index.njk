@@ -32,16 +32,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const grid = document.querySelector(".home-grid");
   if (!grid) return;
 
-  // respect reduced motion
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
   const COLS = 3;
   const easing = "cubic-bezier(.2, 1, .3, 1)";
   const wait = (ms) => new Promise(r => setTimeout(r, ms));
 
-  // traag begin -> sneller einde
-  const durAt = (t) => Math.round(260 - 170 * t); // 260 -> 90
-  const gapAt = (t) => Math.round(210 - 150 * t); // 210 -> 60
+  // global: eerste puzzel trager/mooier, daarna veel sneller
+  let firstPuzzle = true;
 
   const neighbors = (i) => {
     const res = [];
@@ -75,32 +73,35 @@ document.addEventListener("DOMContentLoaded", () => {
       .map(el => ({ el, n: gridNumber(getImg(el)?.src) }))
       .filter(x => Number.isFinite(x.n));
 
-    // Minstens 3 zwarte (laatste) + 8 puzzel = 11 grid tiles nodig
+    // min: 3 zwarte (laatste) + 8 puzzel = 11 grid tiles
     if (gridTiles.length < 11) return;
 
-    // Sorteer op nummer (map-waarheid)
+    // sorteert op filename-nummer (map-waarheid)
     gridTiles.sort((a, b) => a.n - b.n);
 
-    // Laatste 3 grid = zwart -> skip
+    // laatste 3 grid = zwart -> skip
     const withoutLast3 = gridTiles.slice(0, -3);
     if (withoutLast3.length < 8) return;
 
-    // Pak de 8 net vóór die zwarte (oranje zone)
+    // pak de 8 net vóór die zwarte (oranje)
     const eight = withoutLast3.slice(-8).map(x => x.el);
 
-    // 3x3 puzzelcellen = 8 grid + trigger (blank)
+    // 3x3 = 8 grid + trigger (blank)
     const cells = [...eight, triggerEl];
 
-    // Originele srcs bewaren zodat we perfect kunnen eindigen
+    // originele srcs bewaren
     const original = cells.map(el => getImg(el)?.src || "");
 
-    // State = 8 images + null blank
+    // state = 8 images + null blank
     const state = original.slice(0, 8).concat([null]);
 
     // UI flags
     grid.classList.add("puzzle-active");
     cells.forEach(el => el.classList.add("puzzle-tile"));
-    triggerEl.classList.add("puzzle-blank"); // trigger weg tijdens animatie
+
+    // trigger is blank tijdens puzzel + breathing uit
+    triggerEl.classList.add("puzzle-blank");
+    triggerEl.classList.remove("is-breathe");
 
     const applyCell = (idx) => {
       const img = getImg(cells[idx]);
@@ -114,10 +115,31 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    // Shuffle via random-walk
+    // --- SPEED PROFILE ---
+    // Eerste puzzel: korter dan nu (ongeveer half), maar nog "cinematic"
+    // Volgende puzzels: véél sneller
+    const accelPow = firstPuzzle ? 2.1 : 2.6;                 // meer acceleratie
+    const shuffleMoves = firstPuzzle ? 20 : 12;               // sneller door minder moves
+
+    const durAt = (t) => {
+      const u = Math.pow(t, accelPow);
+      // first: 170 -> 55, others: 95 -> 35
+      return firstPuzzle
+        ? Math.round(170 - 115 * u)
+        : Math.round(95 - 60 * u);
+    };
+
+    const gapAt = (t) => {
+      const u = Math.pow(t, accelPow);
+      // first: 110 -> 22, others: 55 -> 10
+      return firstPuzzle
+        ? Math.round(110 - 88 * u)
+        : Math.round(55 - 45 * u);
+    };
+
+    // --- SHUFFLE via random-walk (legit schuifpuzzel) ---
     let blankIndex = 8;
     const moves = [];
-    const shuffleMoves = 26;
     let prev = -1;
 
     for (let k = 0; k < shuffleMoves; k++) {
@@ -130,9 +152,10 @@ document.addEventListener("DOMContentLoaded", () => {
       blankIndex = pick;
     }
 
-    // Zet shuffled state
+    // zet shuffled state
     for (let i = 0; i < 9; i++) applyCell(i);
 
+    // animate 1 move: schuif enkel horizontaal/verticaal (clamp)
     async function animateMove(fromIdx, toIdx, duration) {
       const fromEl = cells[fromIdx];
       const toEl = cells[toIdx];
@@ -141,8 +164,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const a = fromEl.getBoundingClientRect();
       const b = toEl.getBoundingClientRect();
-      const dx = b.left - a.left;
-      const dy = b.top - a.top;
+      let dx = b.left - a.left;
+      let dy = b.top - a.top;
+
+      // CLAMP: forceer echte schuif (nooit diagonaal)
+      if (Math.abs(dx) > Math.abs(dy)) dy = 0;
+      else dx = 0;
 
       fromImg.style.transition = `transform ${duration}ms ${easing}`;
       fromImg.style.transform = `translate(${dx}px, ${dy}px)`;
@@ -153,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
       fromImg.style.transform = "translate(0,0)";
     }
 
-    // Solve: reverse moves, traag -> snel
+    // --- SOLVE (reverse moves) ---
     for (let step = moves.length - 1; step >= 0; step--) {
       const t = 1 - (step / Math.max(1, moves.length - 1));
       const duration = durAt(t);
@@ -173,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await wait(gap);
     }
 
-    // Eind: exact originele layout terug (opgelost) + trigger zichtbaar/klikbaar
+    // Eind: exact originele layout terug + trigger reveal
     for (let i = 0; i < 9; i++) {
       const img = getImg(cells[i]);
       if (!img) continue;
@@ -183,13 +210,23 @@ document.addEventListener("DOMContentLoaded", () => {
       img.src = original[i];
     }
 
+    // trigger zichtbaar + pop/fade
     triggerEl.classList.remove("puzzle-blank");
-    grid.classList.remove("puzzle-active");
+    triggerEl.classList.add("trigger-reveal");
 
+    // breathing pas later starten (en niet tijdens reveal)
+    window.setTimeout(() => {
+      triggerEl.classList.add("is-breathe");
+      triggerEl.classList.remove("trigger-reveal");
+    }, firstPuzzle ? 900 : 550);
+
+    grid.classList.remove("puzzle-active");
     block.dataset.puzzleDone = "1";
+
+    if (firstPuzzle) firstPuzzle = false;
   }
 
-  // Start puzzel bij elke roll wanneer trigger in beeld komt (1x)
+  // Start puzzel per roll bij trigger in beeld (1x)
   const io = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (!entry.isIntersecting) return;
