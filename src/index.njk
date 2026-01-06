@@ -74,9 +74,15 @@ document.addEventListener("DOMContentLoaded", () => {
       img.style.transition = "none";
       img.style.transform = "translate(0,0)";
       img.src = st.original[i] || img.src;
+
+      // voorkom dat transition "sticky" blijft
+      requestAnimationFrame(() => { img.style.transition = ""; });
     }
 
-    st.triggerEl.classList.remove("puzzle-blank", "trigger-reveal", "is-breathe");
+    // BELANGRIJK: breathing enkel wegdoen als hij NIET done is
+    st.triggerEl.classList.remove("puzzle-blank", "trigger-reveal");
+    if (block.dataset.puzzleDone !== "1") st.triggerEl.classList.remove("is-breathe");
+
     st.cells.forEach(el => el.classList.remove("puzzle-tile"));
     grid.classList.remove("puzzle-active");
 
@@ -228,6 +234,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       fromImg.style.transition = "none";
       fromImg.style.transform = "translate(0,0)";
+      requestAnimationFrame(() => { fromImg.style.transition = ""; });
+
       return true;
     }
 
@@ -272,20 +280,23 @@ document.addEventListener("DOMContentLoaded", () => {
     triggerEl.classList.remove("puzzle-blank");
     triggerEl.classList.add("trigger-reveal");
 
-    // breathing pas later starten
+    // mark done (blijft staan) — maar laat _puzzle nog even bestaan tot na breathing-start
+    block.dataset.puzzleDone = "1";
+    block.dataset.puzzleState = "done";
+
+    // breathing pas later starten (NIET afhankelijk van block._puzzle)
     window.setTimeout(() => {
-      const st3 = block._puzzle;
-      if (!st3 || st3.aborted) return;
+      if (block.dataset.puzzleDone !== "1") return;
       triggerEl.classList.add("is-breathe");
       triggerEl.classList.remove("trigger-reveal");
     }, firstPuzzle ? 900 : 550);
 
-    grid.classList.remove("puzzle-active");
+    // na een korte grace period mag _puzzle weg
+    window.setTimeout(() => {
+      if (block.dataset.puzzleDone === "1") delete block._puzzle;
+    }, firstPuzzle ? 1400 : 900);
 
-    // mark done (blijft staan)
-    block.dataset.puzzleDone = "1";
-    block.dataset.puzzleState = "done";
-    delete block._puzzle;
+    grid.classList.remove("puzzle-active");
 
     if (firstPuzzle) firstPuzzle = false;
   }
@@ -301,6 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (entry.isIntersecting) {
         runPuzzleForBlock(block);
       } else {
+        // enkel resetten als hij nog niet klaar is
         if (block.dataset.puzzleDone !== "1" && block.dataset.puzzleState === "running") {
           resetBlock(block);
         }
@@ -325,4 +337,3 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
-
