@@ -60,14 +60,48 @@ document.addEventListener("DOMContentLoaded", () => {
     return m ? parseInt(m[1], 10) : null;
   };
 
+  function resetBlock(block) {
+    const st = block && block._puzzle;
+    if (!st) return;
+
+    st.aborted = true;
+
+    // restore original 3x3 instantly
+    for (let i = 0; i < st.cells.length; i++) {
+      const img = getImg(st.cells[i]);
+      if (!img) continue;
+      img.style.opacity = "";
+      img.style.transition = "none";
+      img.style.transform = "translate(0,0)";
+      img.src = st.original[i] || img.src;
+    }
+
+    st.triggerEl.classList.remove("puzzle-blank", "trigger-reveal", "is-breathe");
+    st.cells.forEach(el => el.classList.remove("puzzle-tile"));
+    grid.classList.remove("puzzle-active");
+
+    delete block._puzzle;
+
+    // als hij nog niet "done" was: terug idle zodat hij later opnieuw kan starten
+    if (block.dataset.puzzleDone !== "1") block.dataset.puzzleState = "idle";
+  }
+
   async function runPuzzleForBlock(block) {
-    if (!block || block.dataset.puzzleDone === "1") return;
+    if (!block) return;
+
+    // al klaar? nooit meer
+    if (block.dataset.puzzleDone === "1") return;
+
+    // al bezig? doe niks
+    if (block.dataset.puzzleState === "running") return;
+
+    // cleanup van eventuele rommel
+    resetBlock(block);
 
     const tiles = Array.from(block.querySelectorAll(".grid-item, .grid-item--trigger"));
     const triggerEl = tiles.find(el => el.classList.contains("grid-item--trigger"));
     if (!triggerEl) return;
 
-    // alle grid tiles met nummer
     const gridTiles = tiles
       .filter(el => !el.classList.contains("grid-item--trigger"))
       .map(el => ({ el, n: gridNumber(getImg(el)?.src) }))
@@ -76,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // min: 3 zwarte (laatste) + 8 puzzel = 11 grid tiles
     if (gridTiles.length < 11) return;
 
-    // sorteert op filename-nummer (map-waarheid)
+    // sorteert op filename-nummer
     gridTiles.sort((a, b) => a.n - b.n);
 
     // laatste 3 grid = zwart -> skip
@@ -92,6 +126,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // originele srcs bewaren
     const original = cells.map(el => getImg(el)?.src || "");
 
+    // lock meteen (zodat snelle scroll nooit 2x tegelijk kan starten)
+    block.dataset.puzzleState = "running";
+
+    // puzzle state op block (voor abort/reset)
+    block._puzzle = {
+      aborted: false,
+      cells,
+      original,
+      triggerEl
+    };
+
     // state = 8 images + null blank
     const state = original.slice(0, 8).concat([null]);
 
@@ -101,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // trigger is blank tijdens puzzel + breathing uit
     triggerEl.classList.add("puzzle-blank");
-    triggerEl.classList.remove("is-breathe");
+    triggerEl.classList.remove("is-breathe", "trigger-reveal");
 
     const applyCell = (idx) => {
       const img = getImg(cells[idx]);
@@ -116,33 +161,32 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // --- SPEED PROFILE ---
-    // Eerste puzzel: korter dan nu (ongeveer half), maar nog "cinematic"
-    // Volgende puzzels: véél sneller
-    const accelPow = firstPuzzle ? 2.1 : 2.6;                 // meer acceleratie
-    const shuffleMoves = firstPuzzle ? 20 : 12;               // sneller door minder moves
+    const accelPow = firstPuzzle ? 2.1 : 2.6;   // meer acceleratie
+    const shuffleMoves = firstPuzzle ? 20 : 12; // sneller door minder moves
 
     const durAt = (t) => {
       const u = Math.pow(t, accelPow);
-      // first: 170 -> 55, others: 95 -> 35
       return firstPuzzle
-        ? Math.round(170 - 115 * u)
-        : Math.round(95 - 60 * u);
+        ? Math.round(170 - 115 * u)  // first: 170 -> 55
+        : Math.round(95 - 60 * u);   // others: 95 -> 35
     };
 
     const gapAt = (t) => {
       const u = Math.pow(t, accelPow);
-      // first: 110 -> 22, others: 55 -> 10
       return firstPuzzle
-        ? Math.round(110 - 88 * u)
-        : Math.round(55 - 45 * u);
+        ? Math.round(110 - 88 * u)   // first: 110 -> 22
+        : Math.round(55 - 45 * u);   // others: 55 -> 10
     };
 
-    // --- SHUFFLE via random-walk (legit schuifpuzzel) ---
+    // --- SHUFFLE via random-walk ---
     let blankIndex = 8;
     const moves = [];
     let prev = -1;
 
     for (let k = 0; k < shuffleMoves; k++) {
+      const st = block._puzzle;
+      if (!st || st.aborted) return resetBlock(block);
+
       const ns = neighbors(blankIndex).filter(n => n !== prev);
       const pick = ns[Math.floor(Math.random() * ns.length)];
       moves.push(pick);
@@ -157,17 +201,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // animate 1 move: schuif enkel horizontaal/verticaal (clamp)
     async function animateMove(fromIdx, toIdx, duration) {
+      const st = block._puzzle;
+      if (!st || st.aborted) return false;
+
       const fromEl = cells[fromIdx];
       const toEl = cells[toIdx];
       const fromImg = getImg(fromEl);
-      if (!fromImg) return;
+      if (!fromImg) return true;
 
       const a = fromEl.getBoundingClientRect();
       const b = toEl.getBoundingClientRect();
       let dx = b.left - a.left;
       let dy = b.top - a.top;
 
-      // CLAMP: forceer echte schuif (nooit diagonaal)
+      // CLAMP: nooit diagonaal
       if (Math.abs(dx) > Math.abs(dy)) dy = 0;
       else dx = 0;
 
@@ -176,12 +223,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
       await wait(duration);
 
+      const st2 = block._puzzle;
+      if (!st2 || st2.aborted) return false;
+
       fromImg.style.transition = "none";
       fromImg.style.transform = "translate(0,0)";
+      return true;
     }
 
     // --- SOLVE (reverse moves) ---
     for (let step = moves.length - 1; step >= 0; step--) {
+      const st = block._puzzle;
+      if (!st || st.aborted) return resetBlock(block);
+
       const t = 1 - (step / Math.max(1, moves.length - 1));
       const duration = durAt(t);
       const gap = gapAt(t);
@@ -189,7 +243,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const from = moves[step];
       const to = blankIndex;
 
-      await animateMove(from, to, duration);
+      const ok = await animateMove(from, to, duration);
+      if (!ok) return resetBlock(block);
 
       [state[to], state[from]] = [state[from], state[to]];
       blankIndex = from;
@@ -201,6 +256,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Eind: exact originele layout terug + trigger reveal
+    const st = block._puzzle;
+    if (!st || st.aborted) return resetBlock(block);
+
     for (let i = 0; i < 9; i++) {
       const img = getImg(cells[i]);
       if (!img) continue;
@@ -214,33 +272,57 @@ document.addEventListener("DOMContentLoaded", () => {
     triggerEl.classList.remove("puzzle-blank");
     triggerEl.classList.add("trigger-reveal");
 
-    // breathing pas later starten (en niet tijdens reveal)
+    // breathing pas later starten
     window.setTimeout(() => {
+      const st3 = block._puzzle;
+      if (!st3 || st3.aborted) return;
       triggerEl.classList.add("is-breathe");
       triggerEl.classList.remove("trigger-reveal");
     }, firstPuzzle ? 900 : 550);
 
     grid.classList.remove("puzzle-active");
+
+    // mark done (blijft staan)
     block.dataset.puzzleDone = "1";
+    block.dataset.puzzleState = "done";
+    delete block._puzzle;
 
     if (firstPuzzle) firstPuzzle = false;
   }
 
   // Start puzzel per roll bij trigger in beeld (1x)
+  // + als je er te snel voorbij scrolt terwijl hij bezig is: force reset
   const io = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
       const trigger = entry.target;
       const block = trigger.closest(".roll-block");
       if (!block) return;
-      runPuzzleForBlock(block);
+
+      if (entry.isIntersecting) {
+        runPuzzleForBlock(block);
+      } else {
+        if (block.dataset.puzzleDone !== "1" && block.dataset.puzzleState === "running") {
+          resetBlock(block);
+        }
+      }
     });
   }, { threshold: 0.35 });
 
   const blocks = Array.from(grid.querySelectorAll(".roll-block"));
   blocks.forEach(block => {
+    block.dataset.puzzleState = "idle";
     const trigger = block.querySelector(".grid-item--trigger");
     if (trigger) io.observe(trigger);
   });
+
+  // extra safety: tab hidden => reset alles dat nog loopt
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      blocks.forEach(b => {
+        if (b.dataset.puzzleDone !== "1" && b.dataset.puzzleState === "running") resetBlock(b);
+      });
+    }
+  });
 });
 </script>
+
