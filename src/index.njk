@@ -6,9 +6,7 @@ title: ARNOLOOG
 <section class="home">
   <div class="home-grid">
     {% for roll in photos.rolls %}
-      {# wrapper per roll zodat we per album kunnen triggeren #}
       <div class="roll-block" data-roll="{{ roll.name }}" style="display: contents;">
-        {# binnen elke roll: omkeren zodat 01 onderaan zit #}
         {% for item in roll.grid | reverse %}
           {% if item.isTrigger %}
             <a href="/rolls/{{ roll.name }}/" class="grid-item grid-item--trigger">
@@ -38,7 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const easing = "cubic-bezier(.2, 1, .3, 1)";
   const wait = (ms) => new Promise(r => setTimeout(r, ms));
 
-  // global: eerste puzzel trager/mooier, daarna veel sneller
   let firstPuzzle = true;
 
   const neighbors = (i) => {
@@ -54,47 +51,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const getImg = (el) => el && el.querySelector ? el.querySelector("img") : null;
 
-  // parse "...-grid-60.webp" -> 60
   const gridNumber = (src) => {
     const m = String(src || "").match(/-grid-(\d+)\./i);
     return m ? parseInt(m[1], 10) : null;
   };
 
-  function resetBlock(block) {
-    const st = block && block._puzzle;
-    if (!st) return;
-
-    st.aborted = true;
-
-    // restore original 3x3 instantly
-    for (let i = 0; i < st.cells.length; i++) {
-      const img = getImg(st.cells[i]);
-      if (!img) continue;
-      img.style.opacity = "";
-      img.style.transition = "none";
-      img.style.transform = "translate(0,0)";
-      img.src = st.original[i] || img.src;
-    }
-
-    st.triggerEl.classList.remove("puzzle-blank", "trigger-reveal", "is-breathe");
-    st.cells.forEach(el => el.classList.remove("puzzle-tile"));
-    grid.classList.remove("puzzle-active");
-
-    delete block._puzzle;
-
-    // als hij nog niet "done" was: terug idle zodat hij later opnieuw kan starten
-    if (block.dataset.puzzleDone !== "1") block.dataset.puzzleState = "idle";
-  }
-
-  // Sorteer de 9 DOM-elements naar echte 3x3 posities (row-major)
   function sortCellsByVisualPosition(cells) {
     const rects = cells.map(el => ({ el, r: el.getBoundingClientRect() }));
-
-    // Groepeer rijen met toleranties (want subpixel / responsive)
     const allTops = rects.map(x => x.r.top).sort((a,b) => a-b);
     const rowTol = Math.max(6, Math.round((rects[0]?.r.height || 100) * 0.25));
 
-    // bepaal 3 row-anchors
     const rowAnchors = [];
     for (const top of allTops) {
       if (!rowAnchors.length) rowAnchors.push(top);
@@ -103,8 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const rowIndexOf = (top) => {
-      let best = 0;
-      let bestD = Infinity;
+      let best = 0, bestD = Infinity;
       for (let i = 0; i < rowAnchors.length; i++) {
         const d = Math.abs(top - rowAnchors[i]);
         if (d < bestD) { bestD = d; best = i; }
@@ -122,16 +87,39 @@ document.addEventListener("DOMContentLoaded", () => {
     return rects.map(x => x.el);
   }
 
+  function resetBlock(block) {
+    const st = block && block._puzzle;
+    if (!st) return;
+
+    st.aborted = true;
+
+    // restore originele 3x3 instantly
+    for (let i = 0; i < st.cells.length; i++) {
+      const img = getImg(st.cells[i]);
+      if (!img) continue;
+      img.style.opacity = "";
+      img.style.transition = "none";
+      img.style.transform = "translate(0,0)";
+      img.src = st.original[i] || img.src;
+    }
+
+    // BELANGRIJK: blank kan op eender welke cel zitten -> verwijder overal
+    st.cells.forEach(el => el.classList.remove("puzzle-blank", "puzzle-tile"));
+    st.triggerEl.classList.remove("trigger-reveal", "is-breathe");
+
+    grid.classList.remove("puzzle-active");
+
+    delete block._puzzle;
+
+    if (block.dataset.puzzleDone !== "1") block.dataset.puzzleState = "idle";
+  }
+
   async function runPuzzleForBlock(block) {
     if (!block) return;
 
-    // al klaar? nooit meer
     if (block.dataset.puzzleDone === "1") return;
-
-    // al bezig? doe niks
     if (block.dataset.puzzleState === "running") return;
 
-    // cleanup van eventuele rommel
     resetBlock(block);
 
     const tiles = Array.from(block.querySelectorAll(".grid-item, .grid-item--trigger"));
@@ -143,53 +131,50 @@ document.addEventListener("DOMContentLoaded", () => {
       .map(el => ({ el, n: gridNumber(getImg(el)?.src) }))
       .filter(x => Number.isFinite(x.n));
 
-    // min: 3 zwarte (laatste) + 8 puzzel = 11 grid tiles
     if (gridTiles.length < 11) return;
 
-    // sorteert op filename-nummer
     gridTiles.sort((a, b) => a.n - b.n);
 
-    // laatste 3 grid = zwart -> skip
     const withoutLast3 = gridTiles.slice(0, -3);
     if (withoutLast3.length < 8) return;
 
-    // pak de 8 net vóór die zwarte (oranje)
     const eight = withoutLast3.slice(-8).map(x => x.el);
 
-    // 3x3 = 8 grid + trigger (blank)
-    // BELANGRIJK: sorteer deze 9 elementen op echte visuele positie
     let cells = [...eight, triggerEl];
     cells = sortCellsByVisualPosition(cells);
 
-    // originele srcs bewaren (in correcte 3x3 volgorde!)
     const original = cells.map(el => getImg(el)?.src || "");
 
-    // blank is de trigger positie (kan midden zijn!)
     let blankIndex = cells.indexOf(triggerEl);
     if (blankIndex < 0) return;
 
-    // lock meteen (zodat snelle scroll nooit 2x tegelijk kan starten)
     block.dataset.puzzleState = "running";
 
-    // puzzle state op block (voor abort/reset)
     block._puzzle = {
       aborted: false,
       cells,
       original,
-      triggerEl
+      triggerEl,
+      blankIndex
     };
 
-    // state = 8 images + null blank (in dezelfde volgorde als cells)
+    // state is 9, met null op blankIndex
     const state = original.slice();
     state[blankIndex] = null;
 
-    // UI flags
     grid.classList.add("puzzle-active");
     cells.forEach(el => el.classList.add("puzzle-tile"));
 
-    // trigger is blank tijdens puzzel + breathing uit
-    triggerEl.classList.add("puzzle-blank");
     triggerEl.classList.remove("is-breathe", "trigger-reveal");
+
+    // blank moet MEEschuiven
+    const setBlank = (newBlank) => {
+      const st = block._puzzle;
+      if (!st || st.aborted) return;
+      st.cells.forEach(el => el.classList.remove("puzzle-blank"));
+      st.cells[newBlank].classList.add("puzzle-blank");
+      st.blankIndex = newBlank;
+    };
 
     const applyCell = (idx) => {
       const img = getImg(cells[idx]);
@@ -203,25 +188,27 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    // --- SPEED PROFILE ---
-    const accelPow = firstPuzzle ? 2.2 : 2.8;   // iets meer acceleratie
-    const shuffleMoves = firstPuzzle ? 18 : 10; // klein beetje sneller
+    // init blank correct zetten
+    setBlank(blankIndex);
+
+    const accelPow = firstPuzzle ? 2.2 : 2.8;
+    const shuffleMoves = firstPuzzle ? 18 : 10;
 
     const durAt = (t) => {
       const u = Math.pow(t, accelPow);
       return firstPuzzle
-        ? Math.round(160 - 110 * u)  // first: ~160 -> ~50
-        : Math.round(85 - 55 * u);   // others: ~85 -> ~30
+        ? Math.round(160 - 110 * u)
+        : Math.round(85 - 55 * u);
     };
 
     const gapAt = (t) => {
       const u = Math.pow(t, accelPow);
       return firstPuzzle
-        ? Math.round(95 - 75 * u)    // first: ~95 -> ~20
-        : Math.round(45 - 35 * u);   // others: ~45 -> ~10
+        ? Math.round(95 - 75 * u)
+        : Math.round(45 - 35 * u);
     };
 
-    // --- SHUFFLE via random-walk (legit schuifpuzzel) ---
+    // SHUFFLE random-walk
     const moves = [];
     let prev = -1;
 
@@ -238,10 +225,11 @@ document.addEventListener("DOMContentLoaded", () => {
       blankIndex = pick;
     }
 
-    // zet shuffled state
+    // blank naar juiste plek na shuffle
+    setBlank(blankIndex);
+
     for (let i = 0; i < 9; i++) applyCell(i);
 
-    // animate 1 move: schuif tile over blank (container animatie, geen img)
     async function animateMove(fromIdx, toIdx, duration) {
       const st = block._puzzle;
       if (!st || st.aborted) return false;
@@ -255,7 +243,6 @@ document.addEventListener("DOMContentLoaded", () => {
       let dx = b.left - a.left;
       let dy = b.top - a.top;
 
-      // nooit diagonaal (moet altijd 1 stap zijn in 3x3)
       if (Math.abs(dx) > Math.abs(dy)) dy = 0;
       else dx = 0;
 
@@ -283,7 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return true;
     }
 
-    // --- SOLVE (reverse moves) ---
+    // SOLVE reverse
     for (let step = moves.length - 1; step >= 0; step--) {
       const st = block._puzzle;
       if (!st || st.aborted) return resetBlock(block);
@@ -301,16 +288,19 @@ document.addEventListener("DOMContentLoaded", () => {
       [state[to], state[from]] = [state[from], state[to]];
       blankIndex = from;
 
+      // blank meeschuiven naar nieuwe plek (vanwaar de tile kwam)
+      setBlank(blankIndex);
+
       applyCell(to);
       applyCell(from);
 
       await wait(gap);
     }
 
-    // Eind: exact originele layout terug + trigger reveal
     const st = block._puzzle;
     if (!st || st.aborted) return resetBlock(block);
 
+    // restore exact originelen (puzzel klaar)
     for (let i = 0; i < 9; i++) {
       const img = getImg(cells[i]);
       if (!img) continue;
@@ -320,11 +310,10 @@ document.addEventListener("DOMContentLoaded", () => {
       img.src = original[i];
     }
 
-    // trigger zichtbaar + pop/fade
-    triggerEl.classList.remove("puzzle-blank");
+    // blank weg, trigger reveal
+    cells.forEach(el => el.classList.remove("puzzle-blank"));
     triggerEl.classList.add("trigger-reveal");
 
-    // breathing pas later starten
     window.setTimeout(() => {
       const st3 = block._puzzle;
       if (!st3 || st3.aborted) return;
@@ -334,7 +323,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     grid.classList.remove("puzzle-active");
 
-    // mark done (blijft staan)
     block.dataset.puzzleDone = "1";
     block.dataset.puzzleState = "done";
     delete block._puzzle;
@@ -342,8 +330,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (firstPuzzle) firstPuzzle = false;
   }
 
-  // Start puzzel per roll bij trigger in beeld (1x)
-  // + als je er te snel voorbij scrolt terwijl hij bezig is: force reset
   const io = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const trigger = entry.target;
@@ -367,7 +353,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (trigger) io.observe(trigger);
   });
 
-  // extra safety: tab hidden => reset alles dat nog loopt
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       blocks.forEach(b => {
