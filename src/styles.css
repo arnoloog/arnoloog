@@ -96,7 +96,7 @@ body.page {
 .grid-item,
 .grid-item--trigger {
   position: relative;
-  overflow: hidden;
+  overflow: hidden; /* blijft zo buiten puzzel */
 }
 
 .grid-item img,
@@ -116,7 +116,7 @@ body.page {
   outline-offset: -1px;
   will-change: transform;
 
-  /* 🔥 KEY FIX */
+  /* 🔥 FIX: laat tiles buiten hun vakje tekenen */
   overflow: visible;
   position: relative;
   z-index: 1;
@@ -127,6 +127,7 @@ body.page {
   pointer-events: none;
 }
 
+/* 🔥 FIX: blank vakje onder de bewegende tile */
 .puzzle-active .puzzle-blank{
   z-index: 0;
 }
