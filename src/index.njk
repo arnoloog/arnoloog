@@ -27,10 +27,10 @@ title: ARNOLOOG
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // =========================
-  // LOGO — random per letter swing vars
-  // (werkt alleen als je CSS vars gebruikt zoals --amp/--dur/--delay)
-  // =========================
+
+  // =========================================================
+  // LOGO — random per letter swing (ZONDER links/rechts snaps)
+  // =========================================================
   (() => {
     const letters = document.querySelectorAll(".logo--hang .hang");
     if (!letters.length) return;
@@ -38,22 +38,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const rand = (min, max) => min + Math.random() * (max - min);
 
-    function seed(el) {
-      const amp = rand(2.8, 9.2);        // deg
-      const dur = rand(3.2, 7.4);        // s
-      const delay = rand(-7.0, 0.0);     // s (negatief = out-of-phase)
-
-      const wob = rand(-0.7, 0.7);       // px (subtiel)
+    function seed(el, { init = false } = {}) {
+      // swing params (mag wel veranderen)
+      const amp = rand(2.8, 9.2);     // deg
+      const dur = rand(3.2, 7.4);     // s
+      const delay = rand(-7.0, 0.0);  // s (out-of-phase)
 
       el.style.setProperty("--amp", amp.toFixed(2) + "deg");
       el.style.setProperty("--dur", dur.toFixed(2) + "s");
       el.style.setProperty("--delay", delay.toFixed(2) + "s");
-      el.style.setProperty("--wob", wob.toFixed(2) + "px");
+
+      // wob (translateX) ONLY bij init -> geen teleports
+      if (init) {
+        const wob = rand(-0.6, 0.6); // px
+        el.style.setProperty("--wob", wob.toFixed(2) + "px");
+      }
     }
 
-    letters.forEach(seed);
+    // init: elke letter krijgt wob + swing
+    letters.forEach(el => seed(el, { init: true }));
 
-    // af en toe 1 letter nieuw “windje”
+    // “windvlaag”: af en toe 1 letter nieuwe swing (zonder wob reset)
     setInterval(() => {
       const el = letters[Math.floor(Math.random() * letters.length)];
       seed(el);
