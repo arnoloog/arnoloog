@@ -109,12 +109,24 @@ body.page {
 
 /* ========================= */
 /*   SLIDE PUZZLE (PER ROLL) */
+/*   (fix: echte "tile"      */
+/*    kan boven andere       */
+/*    schuiven)              */
 /* ========================= */
 
 .puzzle-active .puzzle-tile{
   outline: 1px solid rgba(255,255,255,0.16);
   outline-offset: -1px;
+
+  /* nodig zodat z-index kan werken tijdens de move */
+  position: relative;
+
   will-change: transform;
+}
+
+/* tijdens puzzel: tiles mogen NIET clippen, anders "verdwijnen" ze */
+.puzzle-active .puzzle-tile{
+  overflow: visible;
 }
 
 /* blank vakje */
@@ -126,9 +138,17 @@ body.page {
   content:"";
   position:absolute;
   inset:0;
+
+  /* "empty slot" duidelijk, maar nog steeds zwart */
   background:#000;
+
   outline:1px solid rgba(255,255,255,0.26);
   outline-offset:-1px;
+
+  /* klein beetje diepte (subtiel) */
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.06),
+    inset 0 10px 20px rgba(0,0,0,0.55);
 }
 
 .puzzle-blank img{
