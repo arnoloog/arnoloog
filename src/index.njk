@@ -29,7 +29,8 @@ title: ARNOLOOG
 document.addEventListener("DOMContentLoaded", () => {
 
   // =========================================================
-  // LOGO — random per letter swing (ZONDER links/rechts snaps)
+  // LOGO — random per letter (GEEN snaps) + soms stil hangen
+  // (werkt met je CSS: .hang animatie via hangSway + vars)
   // =========================================================
   (() => {
     const letters = document.querySelectorAll(".logo--hang .hang");
@@ -38,31 +39,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const rand = (min, max) => min + Math.random() * (max - min);
 
-    function seed(el, { init = false } = {}) {
-      // swing params (mag wel veranderen)
-      const amp = rand(2.8, 9.2);     // deg
-      const dur = rand(3.2, 7.4);     // s
-      const delay = rand(-7.0, 0.0);  // s (out-of-phase)
+    letters.forEach(el => {
+      // 20% kans: letter hangt quasi stil (amp ~0)
+      const freeze = Math.random() < 0.20;
+
+      const amp = freeze ? rand(0.0, 0.5) : rand(2.4, 8.4); // deg
+      const dur = rand(4.8, 9.2);                           // s
+      const delay = rand(-9.2, 0.0);                        // s
+      const wob = rand(-0.6, 0.6);                          // px (1x)
 
       el.style.setProperty("--amp", amp.toFixed(2) + "deg");
       el.style.setProperty("--dur", dur.toFixed(2) + "s");
       el.style.setProperty("--delay", delay.toFixed(2) + "s");
-
-      // wob (translateX) ONLY bij init -> geen teleports
-      if (init) {
-        const wob = rand(-0.6, 0.6); // px
-        el.style.setProperty("--wob", wob.toFixed(2) + "px");
-      }
-    }
-
-    // init: elke letter krijgt wob + swing
-    letters.forEach(el => seed(el, { init: true }));
-
-    // “windvlaag”: af en toe 1 letter nieuwe swing (zonder wob reset)
-    setInterval(() => {
-      const el = letters[Math.floor(Math.random() * letters.length)];
-      seed(el);
-    }, 2400);
+      el.style.setProperty("--wob", wob.toFixed(2) + "px");
+    });
   })();
 
 
@@ -84,13 +74,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const clamp01 = (x) => Math.max(0, Math.min(1, x));
   const lerp = (a, b, t) => a + (b - a) * t;
 
-  // smoothstep: zacht starten + zacht eindigen (geen eindsprint)
   const smoothstep = (t) => {
     t = clamp01(t);
     return t * t * (3 - 2 * t);
   };
 
-  // timing curve (eerste clamp harder, daarna milder)
   const curve = (t) => {
     const tc = firstPuzzle ? Math.min(t, 0.93) : Math.min(t, 0.97);
     return smoothstep(tc);
@@ -161,7 +149,6 @@ document.addEventListener("DOMContentLoaded", () => {
       img.src = st.original[i] || img.src;
     }
 
-    // blank kan op eender welke cel zitten -> verwijder overal
     st.cells.forEach(el => el.classList.remove("puzzle-blank", "puzzle-tile"));
     st.triggerEl.classList.remove("trigger-reveal", "is-breathe");
 
@@ -225,7 +212,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     triggerEl.classList.remove("is-breathe", "trigger-reveal");
 
-    // blank moet MEEschuiven
     const setBlank = (newBlank) => {
       const st = block._puzzle;
       if (!st || st.aborted) return;
@@ -246,28 +232,24 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    // init blank correct zetten
     setBlank(blankIndex);
 
-    // shuffle hoeveelheid
     const shuffleMoves = firstPuzzle ? 18 : 10;
 
-    // timings (eerste cinematic, daarna sneller maar niet machinegun)
     const durAt = (t) => {
       const u = curve(t);
       return firstPuzzle
-        ? Math.round(lerp(160, 50, u))   // cinematic
-        : Math.round(lerp(105, 55, u));  // scroll: snappy maar leesbaar
+        ? Math.round(lerp(160, 50, u))
+        : Math.round(lerp(105, 55, u));
     };
 
     const gapAt = (t) => {
       const u = curve(t);
       return firstPuzzle
-        ? Math.round(lerp(95, 20, u))    // cinematic
-        : Math.round(lerp(40, 16, u));   // scroll: geen machinegun
+        ? Math.round(lerp(95, 20, u))
+        : Math.round(lerp(40, 16, u));
     };
 
-    // SHUFFLE random-walk
     const moves = [];
     let prev = -1;
 
@@ -284,9 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
       blankIndex = pick;
     }
 
-    // blank naar juiste plek na shuffle
     setBlank(blankIndex);
-
     for (let i = 0; i < 9; i++) applyCell(i);
 
     async function animateMove(fromIdx, toIdx, duration) {
@@ -329,7 +309,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return true;
     }
 
-    // SOLVE reverse
     for (let step = moves.length - 1; step >= 0; step--) {
       const st = block._puzzle;
       if (!st || st.aborted) return resetBlock(block);
@@ -347,7 +326,6 @@ document.addEventListener("DOMContentLoaded", () => {
       [state[to], state[from]] = [state[from], state[to]];
       blankIndex = from;
 
-      // blank meeschuiven naar nieuwe plek
       setBlank(blankIndex);
 
       applyCell(to);
@@ -359,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const st = block._puzzle;
     if (!st || st.aborted) return resetBlock(block);
 
-    // restore exact originelen (puzzel klaar)
+    // restore exact originelen
     for (let i = 0; i < 9; i++) {
       const img = getImg(cells[i]);
       if (!img) continue;
@@ -369,15 +347,23 @@ document.addEventListener("DOMContentLoaded", () => {
       img.src = original[i];
     }
 
-    // blank weg, trigger reveal
     cells.forEach(el => el.classList.remove("puzzle-blank"));
     triggerEl.classList.add("trigger-reveal");
+
+    // EXTRA ROBUUST: force reflow zodat animation opnieuw start na puzzle-active
+    const triggerImg = triggerEl.querySelector("img");
+    if (triggerImg) { void triggerImg.offsetWidth; }
 
     window.setTimeout(() => {
       const st3 = block._puzzle;
       if (!st3 || st3.aborted) return;
+
       triggerEl.classList.add("is-breathe");
       triggerEl.classList.remove("trigger-reveal");
+
+      // force reflow opnieuw (sommige browsers “cachen” animation)
+      const img2 = triggerEl.querySelector("img");
+      if (img2) { void img2.offsetWidth; }
     }, firstPuzzle ? 900 : 550);
 
     grid.classList.remove("puzzle-active");
