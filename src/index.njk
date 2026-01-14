@@ -191,22 +191,39 @@ document.addEventListener("DOMContentLoaded", () => {
     // init blank correct zetten
     setBlank(blankIndex);
 
-    const accelPow = firstPuzzle ? 2.2 : 2.8;
     const shuffleMoves = firstPuzzle ? 18 : 10;
 
-    const durAt = (t) => {
-      const u = Math.pow(t, accelPow);
-      return firstPuzzle
-        ? Math.round(160 - 110 * u)
-        : Math.round(85 - 55 * u);
-    };
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+const lerp = (a, b, t) => a + (b - a) * t;
 
-    const gapAt = (t) => {
-      const u = Math.pow(t, accelPow);
-      return firstPuzzle
-        ? Math.round(95 - 75 * u)
-        : Math.round(45 - 35 * u);
-    };
+// smoothstep: zacht starten + zacht eindigen (geen “beam”)
+const smoothstep = (t) => {
+  t = clamp01(t);
+  return t * t * (3 - 2 * t);
+};
+
+const curve = (t) => {
+  // alleen voor de eerste puzzel: voorkom dat het einde té hard versnelt
+  // 0.92-0.95 is meestal sweet spot
+  const tc = firstPuzzle ? Math.min(t, 0.93) : t;
+  return smoothstep(tc);
+};
+
+// zelfde bereik als je huidige, maar met betere curve
+const durAt = (t) => {
+  const u = curve(t);
+  return firstPuzzle
+    ? Math.round(lerp(160, 50, u))  // was 160 -> (160-110)=50
+    : Math.round(lerp(85, 30, u));  // was 85 -> (85-55)=30
+};
+
+const gapAt = (t) => {
+  const u = curve(t);
+  return firstPuzzle
+    ? Math.round(lerp(95, 20, u))   // was 95 -> (95-75)=20
+    : Math.round(lerp(45, 10, u));  // was 45 -> (45-35)=10
+};
+
 
     // SHUFFLE random-walk
     const moves = [];
