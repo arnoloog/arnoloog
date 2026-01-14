@@ -74,15 +74,9 @@ document.addEventListener("DOMContentLoaded", () => {
       img.style.transition = "none";
       img.style.transform = "translate(0,0)";
       img.src = st.original[i] || img.src;
-
-      // voorkom dat transition "sticky" blijft
-      requestAnimationFrame(() => { img.style.transition = ""; });
     }
 
-    // BELANGRIJK: breathing enkel wegdoen als hij NIET done is
-    st.triggerEl.classList.remove("puzzle-blank", "trigger-reveal");
-    if (block.dataset.puzzleDone !== "1") st.triggerEl.classList.remove("is-breathe");
-
+    st.triggerEl.classList.remove("puzzle-blank", "trigger-reveal", "is-breathe");
     st.cells.forEach(el => el.classList.remove("puzzle-tile"));
     grid.classList.remove("puzzle-active");
 
@@ -90,6 +84,42 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // als hij nog niet "done" was: terug idle zodat hij later opnieuw kan starten
     if (block.dataset.puzzleDone !== "1") block.dataset.puzzleState = "idle";
+  }
+
+  // Sorteer de 9 DOM-elements naar echte 3x3 posities (row-major)
+  function sortCellsByVisualPosition(cells) {
+    const rects = cells.map(el => ({ el, r: el.getBoundingClientRect() }));
+
+    // Groepeer rijen met toleranties (want subpixel / responsive)
+    const allTops = rects.map(x => x.r.top).sort((a,b) => a-b);
+    const rowTol = Math.max(6, Math.round((rects[0]?.r.height || 100) * 0.25));
+
+    // bepaal 3 row-anchors
+    const rowAnchors = [];
+    for (const top of allTops) {
+      if (!rowAnchors.length) rowAnchors.push(top);
+      else if (Math.abs(top - rowAnchors[rowAnchors.length - 1]) > rowTol) rowAnchors.push(top);
+      if (rowAnchors.length >= 3) break;
+    }
+
+    const rowIndexOf = (top) => {
+      let best = 0;
+      let bestD = Infinity;
+      for (let i = 0; i < rowAnchors.length; i++) {
+        const d = Math.abs(top - rowAnchors[i]);
+        if (d < bestD) { bestD = d; best = i; }
+      }
+      return best;
+    };
+
+    rects.sort((a, b) => {
+      const ra = rowIndexOf(a.r.top);
+      const rb = rowIndexOf(b.r.top);
+      if (ra !== rb) return ra - rb;
+      return a.r.left - b.r.left;
+    });
+
+    return rects.map(x => x.el);
   }
 
   async function runPuzzleForBlock(block) {
@@ -127,10 +157,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const eight = withoutLast3.slice(-8).map(x => x.el);
 
     // 3x3 = 8 grid + trigger (blank)
-    const cells = [...eight, triggerEl];
+    // BELANGRIJK: sorteer deze 9 elementen op echte visuele positie
+    let cells = [...eight, triggerEl];
+    cells = sortCellsByVisualPosition(cells);
 
-    // originele srcs bewaren
+    // originele srcs bewaren (in correcte 3x3 volgorde!)
     const original = cells.map(el => getImg(el)?.src || "");
+
+    // blank is de trigger positie (kan midden zijn!)
+    let blankIndex = cells.indexOf(triggerEl);
+    if (blankIndex < 0) return;
 
     // lock meteen (zodat snelle scroll nooit 2x tegelijk kan starten)
     block.dataset.puzzleState = "running";
@@ -143,8 +179,9 @@ document.addEventListener("DOMContentLoaded", () => {
       triggerEl
     };
 
-    // state = 8 images + null blank
-    const state = original.slice(0, 8).concat([null]);
+    // state = 8 images + null blank (in dezelfde volgorde als cells)
+    const state = original.slice();
+    state[blankIndex] = null;
 
     // UI flags
     grid.classList.add("puzzle-active");
@@ -167,25 +204,24 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // --- SPEED PROFILE ---
-    const accelPow = firstPuzzle ? 2.1 : 2.6;   // meer acceleratie
-    const shuffleMoves = firstPuzzle ? 20 : 12; // sneller door minder moves
+    const accelPow = firstPuzzle ? 2.2 : 2.8;   // iets meer acceleratie
+    const shuffleMoves = firstPuzzle ? 18 : 10; // klein beetje sneller
 
     const durAt = (t) => {
       const u = Math.pow(t, accelPow);
       return firstPuzzle
-        ? Math.round(170 - 115 * u)  // first: 170 -> 55
-        : Math.round(95 - 60 * u);   // others: 95 -> 35
+        ? Math.round(160 - 110 * u)  // first: ~160 -> ~50
+        : Math.round(85 - 55 * u);   // others: ~85 -> ~30
     };
 
     const gapAt = (t) => {
       const u = Math.pow(t, accelPow);
       return firstPuzzle
-        ? Math.round(110 - 88 * u)   // first: 110 -> 22
-        : Math.round(55 - 45 * u);   // others: 55 -> 10
+        ? Math.round(95 - 75 * u)    // first: ~95 -> ~20
+        : Math.round(45 - 35 * u);   // others: ~45 -> ~10
     };
 
-    // --- SHUFFLE via random-walk ---
-    let blankIndex = 8;
+    // --- SHUFFLE via random-walk (legit schuifpuzzel) ---
     const moves = [];
     let prev = -1;
 
@@ -205,49 +241,47 @@ document.addEventListener("DOMContentLoaded", () => {
     // zet shuffled state
     for (let i = 0; i < 9; i++) applyCell(i);
 
-    // animate 1 move: schuif enkel horizontaal/verticaal (clamp)
+    // animate 1 move: schuif tile over blank (container animatie, geen img)
     async function animateMove(fromIdx, toIdx, duration) {
-  const st = block._puzzle;
-  if (!st || st.aborted) return false;
+      const st = block._puzzle;
+      if (!st || st.aborted) return false;
 
-  const fromEl = cells[fromIdx];
-  const toEl = cells[toIdx];
-  if (!fromEl || !toEl) return true;
+      const fromEl = cells[fromIdx];
+      const toEl = cells[toIdx];
+      if (!fromEl || !toEl) return true;
 
-  const a = fromEl.getBoundingClientRect();
-  const b = toEl.getBoundingClientRect();
-  let dx = b.left - a.left;
-  let dy = b.top - a.top;
+      const a = fromEl.getBoundingClientRect();
+      const b = toEl.getBoundingClientRect();
+      let dx = b.left - a.left;
+      let dy = b.top - a.top;
 
-  // CLAMP: nooit diagonaal
-  if (Math.abs(dx) > Math.abs(dy)) dy = 0;
-  else dx = 0;
+      // nooit diagonaal (moet altijd 1 stap zijn in 3x3)
+      if (Math.abs(dx) > Math.abs(dy)) dy = 0;
+      else dx = 0;
 
-  // tijdelijk: laat hem boven alles schuiven + niet clippen
-  const prevZ = fromEl.style.zIndex;
-  const prevOv = fromEl.style.overflow;
+      const prevZ = fromEl.style.zIndex;
+      const prevOv = fromEl.style.overflow;
 
-  fromEl.style.zIndex = "50";
-  fromEl.style.overflow = "visible";
+      fromEl.style.zIndex = "50";
+      fromEl.style.overflow = "visible";
 
-  fromEl.style.transition = `transform ${duration}ms ${easing}`;
-  fromEl.style.transform = `translate(${dx}px, ${dy}px)`;
+      fromEl.style.transition = `transform ${duration}ms ${easing}`;
+      fromEl.style.transform = `translate(${dx}px, ${dy}px)`;
 
-  await wait(duration);
+      await wait(duration);
 
-  const st2 = block._puzzle;
-  if (!st2 || st2.aborted) return false;
+      const st2 = block._puzzle;
+      if (!st2 || st2.aborted) return false;
 
-  // reset
-  fromEl.style.transition = "none";
-  fromEl.style.transform = "translate(0,0)";
-  fromEl.style.zIndex = prevZ || "";
-  fromEl.style.overflow = prevOv || "";
+      fromEl.style.transition = "none";
+      fromEl.style.transform = "translate(0,0)";
+      fromEl.style.zIndex = prevZ || "";
+      fromEl.style.overflow = prevOv || "";
 
-  requestAnimationFrame(() => { fromEl.style.transition = ""; });
+      requestAnimationFrame(() => { fromEl.style.transition = ""; });
 
-  return true;
-}
+      return true;
+    }
 
     // --- SOLVE (reverse moves) ---
     for (let step = moves.length - 1; step >= 0; step--) {
@@ -290,23 +324,20 @@ document.addEventListener("DOMContentLoaded", () => {
     triggerEl.classList.remove("puzzle-blank");
     triggerEl.classList.add("trigger-reveal");
 
-    // mark done (blijft staan) — maar laat _puzzle nog even bestaan tot na breathing-start
-    block.dataset.puzzleDone = "1";
-    block.dataset.puzzleState = "done";
-
-    // breathing pas later starten (NIET afhankelijk van block._puzzle)
+    // breathing pas later starten
     window.setTimeout(() => {
-      if (block.dataset.puzzleDone !== "1") return;
+      const st3 = block._puzzle;
+      if (!st3 || st3.aborted) return;
       triggerEl.classList.add("is-breathe");
       triggerEl.classList.remove("trigger-reveal");
     }, firstPuzzle ? 900 : 550);
 
-    // na een korte grace period mag _puzzle weg
-    window.setTimeout(() => {
-      if (block.dataset.puzzleDone === "1") delete block._puzzle;
-    }, firstPuzzle ? 1400 : 900);
-
     grid.classList.remove("puzzle-active");
+
+    // mark done (blijft staan)
+    block.dataset.puzzleDone = "1";
+    block.dataset.puzzleState = "done";
+    delete block._puzzle;
 
     if (firstPuzzle) firstPuzzle = false;
   }
@@ -322,7 +353,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (entry.isIntersecting) {
         runPuzzleForBlock(block);
       } else {
-        // enkel resetten als hij nog niet klaar is
         if (block.dataset.puzzleDone !== "1" && block.dataset.puzzleState === "running") {
           resetBlock(block);
         }
@@ -346,4 +376,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-</script
+</script>
