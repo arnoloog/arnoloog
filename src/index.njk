@@ -36,7 +36,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const easing = "cubic-bezier(.2, 1, .3, 1)";
   const wait = (ms) => new Promise(r => setTimeout(r, ms));
 
+  // enkel de allereerste puzzel op de pagina krijgt de “cinematic” timings
   let firstPuzzle = true;
+
+  const clamp01 = (x) => Math.max(0, Math.min(1, x));
+  const lerp = (a, b, t) => a + (b - a) * t;
+
+  // smoothstep: zacht starten + zacht eindigen (geen eindsprint)
+  const smoothstep = (t) => {
+    t = clamp01(t);
+    return t * t * (3 - 2 * t);
+  };
+
+  // timing curve (eerste clamp harder, daarna milder)
+  const curve = (t) => {
+    const tc = firstPuzzle ? Math.min(t, 0.93) : Math.min(t, 0.97);
+    return smoothstep(tc);
+  };
 
   const neighbors = (i) => {
     const res = [];
@@ -103,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
       img.src = st.original[i] || img.src;
     }
 
-    // BELANGRIJK: blank kan op eender welke cel zitten -> verwijder overal
+    // blank kan op eender welke cel zitten -> verwijder overal
     st.cells.forEach(el => el.classList.remove("puzzle-blank", "puzzle-tile"));
     st.triggerEl.classList.remove("trigger-reveal", "is-breathe");
 
@@ -191,39 +207,23 @@ document.addEventListener("DOMContentLoaded", () => {
     // init blank correct zetten
     setBlank(blankIndex);
 
+    // shuffle hoeveelheid
     const shuffleMoves = firstPuzzle ? 18 : 10;
 
-const clamp01 = (x) => Math.max(0, Math.min(1, x));
-const lerp = (a, b, t) => a + (b - a) * t;
+    // timings (eerste cinematic, daarna sneller maar niet “super super rap”)
+    const durAt = (t) => {
+      const u = curve(t);
+      return firstPuzzle
+        ? Math.round(lerp(160, 50, u))   // cinematic
+        : Math.round(lerp(105, 55, u));  // scroll: snappy maar leesbaar
+    };
 
-// smoothstep: zacht starten + zacht eindigen (geen “beam”)
-const smoothstep = (t) => {
-  t = clamp01(t);
-  return t * t * (3 - 2 * t);
-};
-
-const curve = (t) => {
-  // alleen voor de eerste puzzel: voorkom dat het einde té hard versnelt
-  // 0.92-0.95 is meestal sweet spot
-  const tc = firstPuzzle ? Math.min(t, 0.93) : t;
-  return smoothstep(tc);
-};
-
-// zelfde bereik als je huidige, maar met betere curve
-const durAt = (t) => {
-  const u = curve(t);
-  return firstPuzzle
-    ? Math.round(lerp(160, 50, u))  // was 160 -> (160-110)=50
-    : Math.round(lerp(85, 30, u));  // was 85 -> (85-55)=30
-};
-
-const gapAt = (t) => {
-  const u = curve(t);
-  return firstPuzzle
-    ? Math.round(lerp(95, 20, u))   // was 95 -> (95-75)=20
-    : Math.round(lerp(45, 10, u));  // was 45 -> (45-35)=10
-};
-
+    const gapAt = (t) => {
+      const u = curve(t);
+      return firstPuzzle
+        ? Math.round(lerp(95, 20, u))    // cinematic
+        : Math.round(lerp(40, 16, u));   // scroll: geen machinegun
+    };
 
     // SHUFFLE random-walk
     const moves = [];
