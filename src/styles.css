@@ -109,9 +109,6 @@ body.page {
 
 /* ========================= */
 /*   SLIDE PUZZLE (PER ROLL) */
-/*   (fix: echte "tile"      */
-/*    kan boven andere       */
-/*    schuiven)              */
 /* ========================= */
 
 .puzzle-active .puzzle-tile{
@@ -139,13 +136,11 @@ body.page {
   position:absolute;
   inset:0;
 
-  /* "empty slot" duidelijk, maar nog steeds zwart */
   background:#000;
 
   outline:1px solid rgba(255,255,255,0.26);
   outline-offset:-1px;
 
-  /* klein beetje diepte (subtiel) */
   box-shadow:
     inset 0 0 0 1px rgba(255,255,255,0.06),
     inset 0 10px 20px rgba(0,0,0,0.55);
@@ -182,24 +177,22 @@ body.page {
 /* ========================= */
 
 @keyframes triggerPulse {
-  /* rustig ademen */
   0%   { filter: brightness(0.90) contrast(1.06); transform: translate(0,0) rotate(0deg); }
   20%  { filter: brightness(1.16) contrast(1.14); transform: translate(0,0) rotate(0deg); }
   44%  { filter: brightness(0.96) contrast(1.07); transform: translate(0,0) rotate(0deg); }
 
-  /* micro jitter burst */
   52%  { filter: brightness(1.18) contrast(1.18); transform: translate(0.7px,-0.5px) rotate(-0.40deg); }
   54%  { filter: brightness(1.14) contrast(1.16); transform: translate(-0.5px,0.7px) rotate(0.32deg); }
   56%  { filter: brightness(1.16) contrast(1.17); transform: translate(0.35px,-0.25px) rotate(-0.22deg); }
 
-  /* terug rustig */
   78%  { filter: brightness(0.95) contrast(1.06); transform: translate(0,0) rotate(0deg); }
   100% { filter: brightness(0.90) contrast(1.06); transform: translate(0,0) rotate(0deg); }
 }
 
-/* breathing enkel wanneer JS .is-breathe zet */
+/* breathing enkel wanneer JS .is-breathe zet
+   !important zodat het zeker terugkomt na puzzle-active */
 .grid-item--trigger.is-breathe img{
-  animation: triggerPulse 4.8s ease-in-out infinite;
+  animation: triggerPulse 4.8s ease-in-out infinite !important;
   will-change: filter, transform;
 }
 
@@ -289,6 +282,7 @@ body.page {
 
 /* ========================= */
 /*        HANGING LOGO       */
+/*   random + soms stil      */
 /* ========================= */
 
 .logo--hang{
@@ -317,19 +311,12 @@ body.page {
   position: relative;
   display:inline-block;
 
-  /* jouw bestaande stagger/drop blijft werken */
-  transform: translateY(var(--drop, 0));
-
-  /* swing op de hele letter */
   transform-origin: 50% -14px;
   will-change: transform;
 
-  animation-name: hangSwing;
-  animation-duration: var(--dur, 4.8s);
+  /* keyframes regelen het “stil hangen” */
+  animation: hangSway var(--dur, 6.2s) ease-in-out infinite;
   animation-delay: var(--delay, 0s);
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  animation-direction: alternate;
 }
 
 .hang::before{
@@ -348,20 +335,27 @@ body.page {
   position:relative;
   display:inline-block;
   margin-top:-0.18em;
-
-  /* BELANGRIJK: geen swing meer op char */
-  animation: none !important;
   transform: translateX(var(--wob, 0px));
   will-change: transform;
 }
 
-/* swing: amplitude per letter */
-@keyframes hangSwing{
-  0%   { transform: translateY(var(--drop,0)) rotate(calc(var(--amp, 6deg) * -1)); }
-  100% { transform: translateY(var(--drop,0)) rotate(var(--amp, 6deg)); }
+/* veel rustmomenten -> soms “hangt” een letter stil */
+@keyframes hangSway{
+  0%   { transform: translateY(var(--drop,0)) rotate(0deg); }
+  18%  { transform: translateY(var(--drop,0)) rotate(0deg); }
+
+  30%  { transform: translateY(var(--drop,0)) rotate(calc(var(--amp, 6deg) * -1)); }
+  42%  { transform: translateY(var(--drop,0)) rotate(0deg); }
+
+  66%  { transform: translateY(var(--drop,0)) rotate(0deg); }
+
+  82%  { transform: translateY(var(--drop,0)) rotate(var(--amp, 6deg)); }
+  92%  { transform: translateY(var(--drop,0)) rotate(0deg); }
+
+  100% { transform: translateY(var(--drop,0)) rotate(0deg); }
 }
 
-/* je drop-stagger mag blijven */
+/* drop-stagger blijft */
 .hang--1{--drop:0}
 .hang--2{--drop:1px}
 .hang--3{--drop:3px}
@@ -371,66 +365,9 @@ body.page {
 .hang--7{--drop:2px}
 .hang--8{--drop:0}
 
-/* weg met deze sync-killers (ze maken het net groepsachtig)
-.hang--2 .char,
-.hang--5 .char,
-.hang--7 .char{ animation:none }
-*/
-
-/* reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .hang { animation: none !important; }
-  .char { transform: none !important; }
 }
-
-.hang{
-  position: relative;
-  display:inline-block;
-  transform:translateY(var(--drop,0));
-}
-
-.hang::before{
-  content:"";
-  position:absolute;
-  left:50%;
-  top:-.78em;
-  width:2px;
-  height:.32em;
-  background:var(--accent);
-  transform:translateX(-50%);
-  opacity:.95;
-}
-
-.char{
-  position:relative;
-  display:inline-block;
-  margin-top:-0.18em;
-  transform-origin:50% -14px;
-  animation:sway 6.6s ease-in-out infinite;
-}
-
-@keyframes sway{
-  0%{transform:rotate(0)}
-  10%{transform:rotate(-7.2deg)}
-  22%{transform:rotate(0)}
-  55%{transform:rotate(0)}
-  68%{transform:rotate(7.6deg)}
-  82%{transform:rotate(0)}
-  100%{transform:rotate(0)}
-}
-
-.hang--1{--drop:0}
-.hang--2{--drop:1px}
-.hang--3{--drop:3px}
-.hang--4{--drop:5px}
-.hang--5{--drop:6px}
-.hang--6{--drop:4px}
-.hang--7{--drop:2px}
-.hang--8{--drop:0}
-
-.hang--2 .char,
-.hang--5 .char,
-.hang--7 .char{ animation:none }
 
 /* ========================= */
 /*        NAV ICONS          */
