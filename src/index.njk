@@ -68,17 +68,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // restore original 3x3 instantly
     for (let i = 0; i < st.cells.length; i++) {
-      const el = st.cells[i];
-      const img = getImg(el);
+      const img = getImg(st.cells[i]);
       if (!img) continue;
-
       img.style.opacity = "";
       img.style.transition = "none";
       img.style.transform = "translate(0,0)";
       img.src = st.original[i] || img.src;
-
-      // 🔥 FIX: z-index reset (voor als we tijdens een move resetten)
-      el.style.zIndex = "";
 
       // voorkom dat transition "sticky" blijft
       requestAnimationFrame(() => { img.style.transition = ""; });
@@ -217,4 +212,128 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const fromEl = cells[fromIdx];
       const toEl = cells[toIdx];
-      const fromImg = getImg(from
+      const fromImg = getImg(fromEl);
+      if (!fromImg) return true;
+
+      const a = fromEl.getBoundingClientRect();
+      const b = toEl.getBoundingClientRect();
+      let dx = b.left - a.left;
+      let dy = b.top - a.top;
+
+      // CLAMP: nooit diagonaal
+      if (Math.abs(dx) > Math.abs(dy)) dy = 0;
+      else dx = 0;
+
+      fromImg.style.transition = `transform ${duration}ms ${easing}`;
+      fromImg.style.transform = `translate(${dx}px, ${dy}px)`;
+
+      await wait(duration);
+
+      const st2 = block._puzzle;
+      if (!st2 || st2.aborted) return false;
+
+      fromImg.style.transition = "none";
+      fromImg.style.transform = "translate(0,0)";
+      requestAnimationFrame(() => { fromImg.style.transition = ""; });
+
+      return true;
+    }
+
+    // --- SOLVE (reverse moves) ---
+    for (let step = moves.length - 1; step >= 0; step--) {
+      const st = block._puzzle;
+      if (!st || st.aborted) return resetBlock(block);
+
+      const t = 1 - (step / Math.max(1, moves.length - 1));
+      const duration = durAt(t);
+      const gap = gapAt(t);
+
+      const from = moves[step];
+      const to = blankIndex;
+
+      const ok = await animateMove(from, to, duration);
+      if (!ok) return resetBlock(block);
+
+      [state[to], state[from]] = [state[from], state[to]];
+      blankIndex = from;
+
+      applyCell(to);
+      applyCell(from);
+
+      await wait(gap);
+    }
+
+    // Eind: exact originele layout terug + trigger reveal
+    const st = block._puzzle;
+    if (!st || st.aborted) return resetBlock(block);
+
+    for (let i = 0; i < 9; i++) {
+      const img = getImg(cells[i]);
+      if (!img) continue;
+      img.style.opacity = "";
+      img.style.transition = "";
+      img.style.transform = "";
+      img.src = original[i];
+    }
+
+    // trigger zichtbaar + pop/fade
+    triggerEl.classList.remove("puzzle-blank");
+    triggerEl.classList.add("trigger-reveal");
+
+    // mark done (blijft staan) — maar laat _puzzle nog even bestaan tot na breathing-start
+    block.dataset.puzzleDone = "1";
+    block.dataset.puzzleState = "done";
+
+    // breathing pas later starten (NIET afhankelijk van block._puzzle)
+    window.setTimeout(() => {
+      if (block.dataset.puzzleDone !== "1") return;
+      triggerEl.classList.add("is-breathe");
+      triggerEl.classList.remove("trigger-reveal");
+    }, firstPuzzle ? 900 : 550);
+
+    // na een korte grace period mag _puzzle weg
+    window.setTimeout(() => {
+      if (block.dataset.puzzleDone === "1") delete block._puzzle;
+    }, firstPuzzle ? 1400 : 900);
+
+    grid.classList.remove("puzzle-active");
+
+    if (firstPuzzle) firstPuzzle = false;
+  }
+
+  // Start puzzel per roll bij trigger in beeld (1x)
+  // + als je er te snel voorbij scrolt terwijl hij bezig is: force reset
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const trigger = entry.target;
+      const block = trigger.closest(".roll-block");
+      if (!block) return;
+
+      if (entry.isIntersecting) {
+        runPuzzleForBlock(block);
+      } else {
+        // enkel resetten als hij nog niet klaar is
+        if (block.dataset.puzzleDone !== "1" && block.dataset.puzzleState === "running") {
+          resetBlock(block);
+        }
+      }
+    });
+  }, { threshold: 0.35 });
+
+  const blocks = Array.from(grid.querySelectorAll(".roll-block"));
+  blocks.forEach(block => {
+    block.dataset.puzzleState = "idle";
+    const trigger = block.querySelector(".grid-item--trigger");
+    if (trigger) io.observe(trigger);
+  });
+
+  // extra safety: tab hidden => reset alles dat nog loopt
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      blocks.forEach(b => {
+        if (b.dataset.puzzleDone !== "1" && b.dataset.puzzleState === "running") resetBlock(b);
+      });
+    }
+  });
+});
+</script
