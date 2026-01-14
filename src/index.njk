@@ -40,13 +40,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const rand = (min, max) => min + Math.random() * (max - min);
 
     letters.forEach(el => {
-      // 20% kans: letter hangt quasi stil (amp ~0)
-      const freeze = Math.random() < 0.20;
-
-      const amp = freeze ? rand(0.0, 0.5) : rand(2.4, 8.4); // deg
-      const dur = rand(4.8, 9.2);                           // s
-      const delay = rand(-9.2, 0.0);                        // s
-      const wob = rand(-0.6, 0.6);                          // px (1x)
+      const freeze = Math.random() < 0.20;            // 20% kans: bijna stil
+      const amp = freeze ? rand(0.0, 0.5) : rand(2.4, 8.4);
+      const dur = rand(4.8, 9.2);
+      const delay = rand(-9.2, 0.0);
+      const wob = rand(-0.6, 0.6);
 
       el.style.setProperty("--amp", amp.toFixed(2) + "deg");
       el.style.setProperty("--dur", dur.toFixed(2) + "s");
@@ -68,7 +66,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const easing = "cubic-bezier(.2, 1, .3, 1)";
   const wait = (ms) => new Promise(r => setTimeout(r, ms));
 
-  // enkel de allereerste puzzel op de pagina krijgt de “cinematic” timings
   let firstPuzzle = true;
 
   const clamp01 = (x) => Math.max(0, Math.min(1, x));
@@ -139,7 +136,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     st.aborted = true;
 
-    // restore originele 3x3 instantly
     for (let i = 0; i < st.cells.length; i++) {
       const img = getImg(st.cells[i]);
       if (!img) continue;
@@ -153,7 +149,6 @@ document.addEventListener("DOMContentLoaded", () => {
     st.triggerEl.classList.remove("trigger-reveal", "is-breathe");
 
     grid.classList.remove("puzzle-active");
-
     delete block._puzzle;
 
     if (block.dataset.puzzleDone !== "1") block.dataset.puzzleState = "idle";
@@ -203,13 +198,13 @@ document.addEventListener("DOMContentLoaded", () => {
       blankIndex
     };
 
-    // state is 9, met null op blankIndex
     const state = original.slice();
     state[blankIndex] = null;
 
     grid.classList.add("puzzle-active");
     cells.forEach(el => el.classList.add("puzzle-tile"));
 
+    // reset trigger anim states
     triggerEl.classList.remove("is-breathe", "trigger-reveal");
 
     const setBlank = (newBlank) => {
@@ -347,29 +342,27 @@ document.addEventListener("DOMContentLoaded", () => {
       img.src = original[i];
     }
 
+    // blank weg, trigger reveal
     cells.forEach(el => el.classList.remove("puzzle-blank"));
     triggerEl.classList.add("trigger-reveal");
 
-    // EXTRA ROBUUST: force reflow zodat animation opnieuw start na puzzle-active
-    const triggerImg = triggerEl.querySelector("img");
-    if (triggerImg) { void triggerImg.offsetWidth; }
+    // puzzel eindigt NU -> deze flags zetten we meteen
+    grid.classList.remove("puzzle-active");
+    block.dataset.puzzleDone = "1";
+    block.dataset.puzzleState = "done";
 
+    // breathing starten NA reveal (zonder block._puzzle check!)
     window.setTimeout(() => {
-      const st3 = block._puzzle;
-      if (!st3 || st3.aborted) return;
-
+      if (block.dataset.puzzleDone !== "1") return;
       triggerEl.classList.add("is-breathe");
       triggerEl.classList.remove("trigger-reveal");
 
-      // force reflow opnieuw (sommige browsers “cachen” animation)
+      // force reflow (sommige browsers resetten animation pas zo)
       const img2 = triggerEl.querySelector("img");
       if (img2) { void img2.offsetWidth; }
     }, firstPuzzle ? 900 : 550);
 
-    grid.classList.remove("puzzle-active");
-
-    block.dataset.puzzleDone = "1";
-    block.dataset.puzzleState = "done";
+    // puzzle state opruimen (mag weg, breathing gebruikt het niet)
     delete block._puzzle;
 
     if (firstPuzzle) firstPuzzle = false;
