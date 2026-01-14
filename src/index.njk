@@ -27,6 +27,43 @@ title: ARNOLOOG
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+  // =========================
+  // LOGO — random per letter swing vars
+  // (werkt alleen als je CSS vars gebruikt zoals --amp/--dur/--delay)
+  // =========================
+  (() => {
+    const letters = document.querySelectorAll(".logo--hang .hang");
+    if (!letters.length) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const rand = (min, max) => min + Math.random() * (max - min);
+
+    function seed(el) {
+      const amp = rand(2.8, 9.2);        // deg
+      const dur = rand(3.2, 7.4);        // s
+      const delay = rand(-7.0, 0.0);     // s (negatief = out-of-phase)
+
+      const wob = rand(-0.7, 0.7);       // px (subtiel)
+
+      el.style.setProperty("--amp", amp.toFixed(2) + "deg");
+      el.style.setProperty("--dur", dur.toFixed(2) + "s");
+      el.style.setProperty("--delay", delay.toFixed(2) + "s");
+      el.style.setProperty("--wob", wob.toFixed(2) + "px");
+    }
+
+    letters.forEach(seed);
+
+    // af en toe 1 letter nieuw “windje”
+    setInterval(() => {
+      const el = letters[Math.floor(Math.random() * letters.length)];
+      seed(el);
+    }, 2400);
+  })();
+
+
+  // =========================
+  // PUZZLE — home grid
+  // =========================
   const grid = document.querySelector(".home-grid");
   if (!grid) return;
 
@@ -210,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // shuffle hoeveelheid
     const shuffleMoves = firstPuzzle ? 18 : 10;
 
-    // timings (eerste cinematic, daarna sneller maar niet “super super rap”)
+    // timings (eerste cinematic, daarna sneller maar niet machinegun)
     const durAt = (t) => {
       const u = curve(t);
       return firstPuzzle
@@ -305,7 +342,7 @@ document.addEventListener("DOMContentLoaded", () => {
       [state[to], state[from]] = [state[from], state[to]];
       blankIndex = from;
 
-      // blank meeschuiven naar nieuwe plek (vanwaar de tile kwam)
+      // blank meeschuiven naar nieuwe plek
       setBlank(blankIndex);
 
       applyCell(to);
