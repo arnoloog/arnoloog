@@ -316,6 +316,76 @@ body.page {
 .hang{
   position: relative;
   display:inline-block;
+
+  /* jouw bestaande stagger/drop blijft werken */
+  transform: translateY(var(--drop, 0));
+
+  /* swing op de hele letter */
+  transform-origin: 50% -14px;
+  will-change: transform;
+
+  animation-name: hangSwing;
+  animation-duration: var(--dur, 4.8s);
+  animation-delay: var(--delay, 0s);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.hang::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:-.78em;
+  width:2px;
+  height:.32em;
+  background:var(--accent);
+  transform:translateX(-50%);
+  opacity:.95;
+}
+
+.char{
+  position:relative;
+  display:inline-block;
+  margin-top:-0.18em;
+
+  /* BELANGRIJK: geen swing meer op char */
+  animation: none !important;
+  transform: translateX(var(--wob, 0px));
+  will-change: transform;
+}
+
+/* swing: amplitude per letter */
+@keyframes hangSwing{
+  0%   { transform: translateY(var(--drop,0)) rotate(calc(var(--amp, 6deg) * -1)); }
+  100% { transform: translateY(var(--drop,0)) rotate(var(--amp, 6deg)); }
+}
+
+/* je drop-stagger mag blijven */
+.hang--1{--drop:0}
+.hang--2{--drop:1px}
+.hang--3{--drop:3px}
+.hang--4{--drop:5px}
+.hang--5{--drop:6px}
+.hang--6{--drop:4px}
+.hang--7{--drop:2px}
+.hang--8{--drop:0}
+
+/* weg met deze sync-killers (ze maken het net groepsachtig)
+.hang--2 .char,
+.hang--5 .char,
+.hang--7 .char{ animation:none }
+*/
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .hang { animation: none !important; }
+  .char { transform: none !important; }
+}
+
+.hang{
+  position: relative;
+  display:inline-block;
   transform:translateY(var(--drop,0));
 }
 
