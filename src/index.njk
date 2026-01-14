@@ -207,37 +207,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // animate 1 move: schuif enkel horizontaal/verticaal (clamp)
     async function animateMove(fromIdx, toIdx, duration) {
-      const st = block._puzzle;
-      if (!st || st.aborted) return false;
+  const st = block._puzzle;
+  if (!st || st.aborted) return false;
 
-      const fromEl = cells[fromIdx];
-      const toEl = cells[toIdx];
-      const fromImg = getImg(fromEl);
-      if (!fromImg) return true;
+  const fromEl = cells[fromIdx];
+  const toEl = cells[toIdx];
+  if (!fromEl || !toEl) return true;
 
-      const a = fromEl.getBoundingClientRect();
-      const b = toEl.getBoundingClientRect();
-      let dx = b.left - a.left;
-      let dy = b.top - a.top;
+  const a = fromEl.getBoundingClientRect();
+  const b = toEl.getBoundingClientRect();
+  let dx = b.left - a.left;
+  let dy = b.top - a.top;
 
-      // CLAMP: nooit diagonaal
-      if (Math.abs(dx) > Math.abs(dy)) dy = 0;
-      else dx = 0;
+  // CLAMP: nooit diagonaal
+  if (Math.abs(dx) > Math.abs(dy)) dy = 0;
+  else dx = 0;
 
-      fromImg.style.transition = `transform ${duration}ms ${easing}`;
-      fromImg.style.transform = `translate(${dx}px, ${dy}px)`;
+  // tijdelijk: laat hem boven alles schuiven + niet clippen
+  const prevZ = fromEl.style.zIndex;
+  const prevOv = fromEl.style.overflow;
 
-      await wait(duration);
+  fromEl.style.zIndex = "50";
+  fromEl.style.overflow = "visible";
 
-      const st2 = block._puzzle;
-      if (!st2 || st2.aborted) return false;
+  fromEl.style.transition = `transform ${duration}ms ${easing}`;
+  fromEl.style.transform = `translate(${dx}px, ${dy}px)`;
 
-      fromImg.style.transition = "none";
-      fromImg.style.transform = "translate(0,0)";
-      requestAnimationFrame(() => { fromImg.style.transition = ""; });
+  await wait(duration);
 
-      return true;
-    }
+  const st2 = block._puzzle;
+  if (!st2 || st2.aborted) return false;
+
+  // reset
+  fromEl.style.transition = "none";
+  fromEl.style.transform = "translate(0,0)";
+  fromEl.style.zIndex = prevZ || "";
+  fromEl.style.overflow = prevOv || "";
+
+  requestAnimationFrame(() => { fromEl.style.transition = ""; });
+
+  return true;
+}
 
     // --- SOLVE (reverse moves) ---
     for (let step = moves.length - 1; step >= 0; step--) {
