@@ -6,7 +6,7 @@ permalink: /discovery/
 
 <section class="discovery">
   <img id="viewer" class="discovery-img" src="" alt="">
-  
+
   <div class="discovery-overlay">
     <div class="discovery-meta" id="meta"></div>
     <div class="discovery-hint">tap to explore</div>
@@ -17,20 +17,18 @@ permalink: /discovery/
 document.addEventListener("DOMContentLoaded", () => {
   const images = [
     {% for roll in photos.rolls %}
-      {% if roll.photos %}
-        {% for img in roll.photos %}
-          {% if img.src and "-full-" in img.src %}
-            {
-              src: "{{ img.src }}",
-              roll: "{{ roll.name }}"
-            },
-          {% endif %}
-        {% endfor %}
-      {% endif %}
+      {% for img in roll.full %}
+        {
+          src: "{{ img }}",
+          roll: "{{ roll.name }}",
+          year: "{{ roll.year }}"
+        },
+      {% endfor %}
     {% endfor %}
   ];
 
   let current = null;
+  let currentRoll = null;
 
   const viewer = document.getElementById("viewer");
   const meta = document.getElementById("meta");
@@ -41,22 +39,29 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function pickRandom() {
-    let next;
+    let next = null;
     let tries = 0;
 
     do {
       next = images[Math.floor(Math.random() * images.length)];
       tries++;
-    } while (next === current && tries < 20);
+    } while (
+      tries < 40 &&
+      (
+        next.src === current ||
+        (images.length > 8 && next.roll === currentRoll)
+      )
+    );
 
-    current = next;
+    current = next.src;
+    currentRoll = next.roll;
 
     viewer.style.opacity = "0";
 
     setTimeout(() => {
       viewer.src = next.src;
       viewer.alt = next.roll;
-      meta.textContent = next.roll;
+      meta.textContent = `${next.year} — ${next.roll}`;
       viewer.style.opacity = "1";
     }, 120);
   }
