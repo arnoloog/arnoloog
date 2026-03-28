@@ -406,8 +406,20 @@ body.page {
   align-items:center;
 }
 
-.nav--left{justify-self:start}
-.nav--right{justify-self:end}
+.nav--left{
+  justify-self:start;
+  display:flex;
+  align-items:center;
+  gap:0.9rem;
+}
+
+.nav--right{
+  justify-self:end;
+  display:flex;
+  align-items:center;
+  gap:0.9rem;
+}
+
 .logo--center{justify-self:center}
 
 /* ========================= */
@@ -561,7 +573,10 @@ body.page {
 
 .discovery {
   position: fixed;
-  inset: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 64px;
   background: #000;
   z-index: 10;
 }
@@ -572,6 +587,7 @@ body.page {
   object-fit: contain;
   transition: opacity 0.25s ease;
   cursor: pointer;
+  display: block;
 }
 
 .discovery-overlay {
