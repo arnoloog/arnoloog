@@ -34,22 +34,23 @@
           <span class="hang hang--8"><span class="char">G</span></span>
         </a>
 
-        <!-- ROLLS ICON (RIGHT) -->
+        <!-- ROLLS + PRIVATE ICONS (RIGHT) -->
         <nav class="nav nav--icons nav--right">
           <a href="{{ '/rolls/' | url }}" aria-label="Rolls" class="nav-icon nav-icon--rolls">
             <svg viewBox="0 0 24 24" aria-hidden="true">
-
-          <!-- FILM (achtergrond, hard, recht) -->
-<path d="M3 7.5 H10 V16.5 H3 Z"></path>
-
+              <!-- FILM (achtergrond, hard, recht) -->
+              <path d="M3 7.5 H10 V16.5 H3 Z"></path>
 
               <!-- CILINDER (voorgrond, volume) -->
-              <!-- top -->
               <ellipse cx="15.5" cy="6.5" rx="4.2" ry="2.4"></ellipse>
-
-              <!-- body -->
               <path d="M11.3 6.5v11.2c0 1.6 2 2.8 4.2 2.8s4.2-1.2 4.2-2.8V6.5"></path>
+            </svg>
+          </a>
 
+          <a href="{{ '/private/' | url }}" aria-label="Private" class="nav-icon nav-icon--private">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="5" y="10" width="14" height="10" rx="2"></rect>
+              <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
             </svg>
           </a>
         </nav>
