@@ -1,0 +1,80 @@
+---
+layout: layouts/base.njk
+title: Discovery
+permalink: /discovery/
+---
+
+<section class="discovery">
+  <img id="viewer" class="discovery-img" src="" alt="">
+  
+  <div class="discovery-overlay">
+    <div class="discovery-meta" id="meta"></div>
+    <div class="discovery-hint">tap to explore</div>
+  </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const images = [
+    {% for roll in photos.rolls %}
+      {% for img in roll.full %}
+        {
+          src: "{{ img.src }}",
+          roll: "{{ roll.name }}"
+        },
+      {% endfor %}
+    {% endfor %}
+  ];
+
+  let current = null;
+
+  const viewer = document.getElementById("viewer");
+  const meta = document.getElementById("meta");
+
+  function pickRandom() {
+    let next;
+    do {
+      next = images[Math.floor(Math.random() * images.length)];
+    } while (next === current);
+
+    current = next;
+
+    viewer.style.opacity = 0;
+
+    setTimeout(() => {
+      viewer.src = next.src;
+      meta.textContent = next.roll;
+      viewer.style.opacity = 1;
+    }, 120);
+  }
+
+  // eerste image meteen laden
+  pickRandom();
+
+  // click = next
+  document.addEventListener("click", pickRandom);
+
+  // swipe (mobile)
+  let startX = 0;
+
+  document.addEventListener("touchstart", (e) => {
+    startX = e.touches[0].clientX;
+  });
+
+  document.addEventListener("touchend", (e) => {
+    const endX = e.changedTouches[0].clientX;
+    if (Math.abs(endX - startX) > 40) {
+      pickRandom();
+    }
+  });
+
+  // keyboard (desktop nice touch)
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight" || e.key === " ") {
+      pickRandom();
+    }
+  });
+
+});
+</script>
