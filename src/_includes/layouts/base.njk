@@ -13,11 +13,18 @@
     <header class="site-header">
       <div class="site-header__inner site-header__inner--centered">
 
-        <!-- GRID ICON (LEFT) -->
+        <!-- GRID + DISCOVERY ICONS (LEFT) -->
         <nav class="nav nav--icons nav--left">
           <a href="{{ '/' | url }}" aria-label="Grid" class="nav-icon nav-icon--grid">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M3 8h18M3 16h18M8 3v18M16 3v18"></path>
+            </svg>
+          </a>
+
+          <a href="{{ '/discovery/' | url }}" aria-label="Discovery" class="nav-icon nav-icon--discovery">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="8"></circle>
+              <path d="M14.8 9.2l-2.2 5.6-5.6 2.2 2.2-5.6z"></path>
             </svg>
           </a>
         </nav>
@@ -38,10 +45,7 @@
         <nav class="nav nav--icons nav--right">
           <a href="{{ '/rolls/' | url }}" aria-label="Rolls" class="nav-icon nav-icon--rolls">
             <svg viewBox="0 0 24 24" aria-hidden="true">
-              <!-- FILM (achtergrond, hard, recht) -->
               <path d="M3 7.5 H10 V16.5 H3 Z"></path>
-
-              <!-- CILINDER (voorgrond, volume) -->
               <ellipse cx="15.5" cy="6.5" rx="4.2" ry="2.4"></ellipse>
               <path d="M11.3 6.5v11.2c0 1.6 2 2.8 4.2 2.8s4.2-1.2 4.2-2.8V6.5"></path>
             </svg>
@@ -81,11 +85,16 @@
         thumb.addEventListener("mousedown", (e) => {
           e.preventDefault();
           scrollToPosition(e.clientY);
-          function move(ev) { scrollToPosition(ev.clientY); }
+
+          function move(ev) {
+            scrollToPosition(ev.clientY);
+          }
+
           function up() {
             window.removeEventListener("mousemove", move);
             window.removeEventListener("mouseup", up);
           }
+
           window.addEventListener("mousemove", move);
           window.addEventListener("mouseup", up);
         });
