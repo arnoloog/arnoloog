@@ -15,15 +15,18 @@ permalink: /discovery/
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
   const images = [
     {% for roll in photos.rolls %}
-      {% for img in roll.full %}
-        {
-          src: "{{ img.src }}",
-          roll: "{{ roll.name }}"
-        },
-      {% endfor %}
+      {% if roll.photos %}
+        {% for img in roll.photos %}
+          {% if img.src and "-full-" in img.src %}
+            {
+              src: "{{ img.src }}",
+              roll: "{{ roll.name }}"
+            },
+          {% endif %}
+        {% endfor %}
+      {% endif %}
     {% endfor %}
   ];
 
@@ -32,49 +35,62 @@ document.addEventListener("DOMContentLoaded", () => {
   const viewer = document.getElementById("viewer");
   const meta = document.getElementById("meta");
 
+  if (!viewer || !meta || !images.length) {
+    console.warn("Discovery: geen full images gevonden.");
+    return;
+  }
+
   function pickRandom() {
     let next;
+    let tries = 0;
+
     do {
       next = images[Math.floor(Math.random() * images.length)];
-    } while (next === current);
+      tries++;
+    } while (next === current && tries < 20);
 
     current = next;
 
-    viewer.style.opacity = 0;
+    viewer.style.opacity = "0";
 
     setTimeout(() => {
       viewer.src = next.src;
+      viewer.alt = next.roll;
       meta.textContent = next.roll;
-      viewer.style.opacity = 1;
+      viewer.style.opacity = "1";
     }, 120);
   }
 
-  // eerste image meteen laden
+  // eerste beeld direct laden
   pickRandom();
 
-  // click = next
-  document.addEventListener("click", pickRandom);
+  // click / tap = volgende
+  document.addEventListener("click", (e) => {
+    const clickedNav = e.target.closest(".nav-icon, .logo");
+    if (clickedNav) return;
+    pickRandom();
+  });
 
-  // swipe (mobile)
+  // swipe mobile
   let startX = 0;
 
   document.addEventListener("touchstart", (e) => {
     startX = e.touches[0].clientX;
-  });
+  }, { passive: true });
 
   document.addEventListener("touchend", (e) => {
     const endX = e.changedTouches[0].clientX;
     if (Math.abs(endX - startX) > 40) {
       pickRandom();
     }
-  });
+  }, { passive: true });
 
-  // keyboard (desktop nice touch)
+  // keyboard
   document.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowRight" || e.key === " ") {
+    if (e.key === "ArrowRight" || e.key === " " || e.key === "Enter") {
+      e.preventDefault();
       pickRandom();
     }
   });
-
 });
 </script>
