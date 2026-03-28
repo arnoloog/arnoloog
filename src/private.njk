@@ -1,0 +1,78 @@
+---
+layout: layouts/base.njk
+title: Private
+permalink: /private/
+---
+
+<section class="private-page">
+  <div class="private-wrap">
+
+    <div class="private-gate" id="privateGate">
+      <p class="private-kicker">private</p>
+      <h1 class="private-title">For close friends only</h1>
+      <p class="private-text">
+        Enter the password to view this private selection.
+      </p>
+
+      <div class="private-form">
+        <input
+          type="password"
+          id="privatePassword"
+          class="private-input"
+          placeholder="password"
+        >
+        <button id="privateSubmit" class="private-button" type="button">
+          enter
+        </button>
+      </div>
+
+      <p class="private-error" id="privateError" hidden>
+        Wrong password.
+      </p>
+    </div>
+
+    <div class="private-content" id="privateContent" hidden>
+      <h1>Private content</h1>
+      <p>Hier komen later je foto's.</p>
+    </div>
+
+  </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const PASSWORD = "test123"; // verander later
+  const STORAGE_KEY = "arnoloog_private_access";
+
+  const gate = document.getElementById("privateGate");
+  const content = document.getElementById("privateContent");
+  const input = document.getElementById("privatePassword");
+  const submit = document.getElementById("privateSubmit");
+  const error = document.getElementById("privateError");
+
+  function unlock() {
+    gate.style.display = "none";
+    content.style.display = "block";
+  }
+
+  function checkPassword() {
+    if (input.value === PASSWORD) {
+      localStorage.setItem(STORAGE_KEY, "yes");
+      unlock();
+    } else {
+      error.hidden = false;
+      input.value = "";
+    }
+  }
+
+  if (localStorage.getItem(STORAGE_KEY) === "yes") {
+    unlock();
+  }
+
+  submit.addEventListener("click", checkPassword);
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") checkPassword();
+  });
+});
+</script>
