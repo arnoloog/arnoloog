@@ -158,56 +158,67 @@ body.page {
 }
 
 /* ========================= */
-/*      TRIGGER REVEAL       */
+/*   TRIGGER COMPLETE FLOW   */
 /* ========================= */
 
-@keyframes triggerReveal {
+@keyframes triggerFlow {
   0% {
     opacity: 0;
-    transform: scale(0.82);
+    transform: scale(0.82) translate(0,0) rotate(0deg);
+    filter: brightness(1) contrast(1);
   }
 
-  60% {
+  10% {
     opacity: 1;
     transform: scale(1.06);
   }
 
-  100% {
-    opacity: 1;
+  16% {
     transform: scale(1);
+  }
+
+  26% {
+    transform: scale(1);
+    filter: brightness(1) contrast(1);
+  }
+
+  40% {
+    filter: brightness(1.12) contrast(1.10);
+  }
+
+  54% {
+    filter: brightness(1) contrast(1);
+  }
+
+  64% {
+    transform: translate(0.6px,-0.4px) rotate(-0.35deg);
+    filter: brightness(1.14) contrast(1.12);
+  }
+
+  66% {
+    transform: translate(-0.4px,0.6px) rotate(0.28deg);
+  }
+
+  68% {
+    transform: translate(0.3px,-0.2px) rotate(-0.18deg);
+  }
+
+  80% {
+    transform: translate(0,0) rotate(0deg);
+    filter: brightness(1) contrast(1);
+  }
+
+  100% {
+    transform: translate(0,0) rotate(0deg);
+    filter: brightness(1) contrast(1);
   }
 }
 
 .grid-item--trigger.trigger-reveal img{
-  animation: triggerReveal 420ms cubic-bezier(.22, 1, .36, 1) both;
-  will-change: transform, opacity;
+  animation: triggerFlow 5.2s ease-in-out infinite;
+  will-change: transform, opacity, filter;
   backface-visibility: hidden;
 }
-
-/* ========================= */
-/*   TRIGGER BREATH + SHAKE  */
-/* ========================= */
-
-@keyframes triggerPulse {
-  0%   { filter: brightness(1) contrast(1); transform: translate(0,0) rotate(0deg); }
-  20%  { filter: brightness(1.12) contrast(1.10); }
-  44%  { filter: brightness(1) contrast(1); }
-
-  52%  { filter: brightness(1.14) contrast(1.12); transform: translate(0.6px,-0.4px) rotate(-0.35deg); }
-  54%  { filter: brightness(1.12) contrast(1.10); transform: translate(-0.4px,0.6px) rotate(0.28deg); }
-  56%  { filter: brightness(1.13) contrast(1.11); transform: translate(0.3px,-0.2px) rotate(-0.18deg); }
-
-  78%  { filter: brightness(1) contrast(1); transform: translate(0,0) rotate(0deg); }
-  100% { filter: brightness(1) contrast(1); transform: translate(0,0) rotate(0deg); }
-}
-
-/* breathing enkel wanneer JS .is-breathe zet
-   !important zodat het zeker terugkomt na puzzle-active */
-.grid-item--trigger.is-breathe img{
-  animation: triggerPulse 4.8s ease-in-out infinite !important;
-  will-change: filter, transform;
-}
-
 /* ========================= */
 /*       FAST SCROLLBAR      */
 /* ========================= */
