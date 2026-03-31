@@ -27,33 +27,6 @@ title: ARNOLOOG
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
-  // =========================================================
-  // LOGO — random per letter (GEEN snaps) + soms stil hangen
-  // (werkt met je CSS: .hang animatie via hangSway + vars)
-  // =========================================================
-  (() => {
-    const letters = document.querySelectorAll(".logo--hang .hang");
-    if (!letters.length) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const rand = (min, max) => min + Math.random() * (max - min);
-
-    letters.forEach(el => {
-      const freeze = Math.random() < 0.20;            // 20% kans: bijna stil
-      const amp = freeze ? rand(0.0, 0.5) : rand(2.4, 8.4);
-      const dur = rand(4.8, 9.2);
-      const delay = rand(-9.2, 0.0);
-      const wob = rand(-0.6, 0.6);
-
-      el.style.setProperty("--amp", amp.toFixed(2) + "deg");
-      el.style.setProperty("--dur", dur.toFixed(2) + "s");
-      el.style.setProperty("--delay", delay.toFixed(2) + "s");
-      el.style.setProperty("--wob", wob.toFixed(2) + "px");
-    });
-  })();
-
-
   // =========================
   // PUZZLE — home grid
   // =========================
@@ -101,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function sortCellsByVisualPosition(cells) {
     const rects = cells.map(el => ({ el, r: el.getBoundingClientRect() }));
-    const allTops = rects.map(x => x.r.top).sort((a,b) => a-b);
+    const allTops = rects.map(x => x.r.top).sort((a, b) => a - b);
     const rowTol = Math.max(6, Math.round((rects[0]?.r.height || 100) * 0.25));
 
     const rowAnchors = [];
@@ -112,10 +85,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const rowIndexOf = (top) => {
-      let best = 0, bestD = Infinity;
+      let best = 0;
+      let bestD = Infinity;
       for (let i = 0; i < rowAnchors.length; i++) {
         const d = Math.abs(top - rowAnchors[i]);
-        if (d < bestD) { bestD = d; best = i; }
+        if (d < bestD) {
+          bestD = d;
+          best = i;
+        }
       }
       return best;
     };
@@ -204,7 +181,6 @@ document.addEventListener("DOMContentLoaded", () => {
     grid.classList.add("puzzle-active");
     cells.forEach(el => el.classList.add("puzzle-tile"));
 
-    // reset trigger anim states
     triggerEl.classList.remove("is-breathe", "trigger-reveal");
 
     const setBlank = (newBlank) => {
@@ -299,7 +275,9 @@ document.addEventListener("DOMContentLoaded", () => {
       fromEl.style.zIndex = prevZ || "";
       fromEl.style.overflow = prevOv || "";
 
-      requestAnimationFrame(() => { fromEl.style.transition = ""; });
+      requestAnimationFrame(() => {
+        fromEl.style.transition = "";
+      });
 
       return true;
     }
@@ -332,7 +310,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const st = block._puzzle;
     if (!st || st.aborted) return resetBlock(block);
 
-    // restore exact originelen
     for (let i = 0; i < 9; i++) {
       const img = getImg(cells[i]);
       if (!img) continue;
@@ -342,27 +319,24 @@ document.addEventListener("DOMContentLoaded", () => {
       img.src = original[i];
     }
 
-    // blank weg, trigger reveal
     cells.forEach(el => el.classList.remove("puzzle-blank"));
     triggerEl.classList.add("trigger-reveal");
 
-    // puzzel eindigt NU -> deze flags zetten we meteen
     grid.classList.remove("puzzle-active");
     block.dataset.puzzleDone = "1";
     block.dataset.puzzleState = "done";
 
-    // breathing starten NA reveal (zonder block._puzzle check!)
     window.setTimeout(() => {
       if (block.dataset.puzzleDone !== "1") return;
       triggerEl.classList.add("is-breathe");
       triggerEl.classList.remove("trigger-reveal");
 
-      // force reflow (sommige browsers resetten animation pas zo)
       const img2 = triggerEl.querySelector("img");
-      if (img2) { void img2.offsetWidth; }
+      if (img2) {
+        void img2.offsetWidth;
+      }
     }, firstPuzzle ? 900 : 550);
 
-    // puzzle state opruimen (mag weg, breathing gebruikt het niet)
     delete block._puzzle;
 
     if (firstPuzzle) firstPuzzle = false;
@@ -394,7 +368,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       blocks.forEach(b => {
-        if (b.dataset.puzzleDone !== "1" && b.dataset.puzzleState === "running") resetBlock(b);
+        if (b.dataset.puzzleDone !== "1" && b.dataset.puzzleState === "running") {
+          resetBlock(b);
+        }
       });
     }
   });
