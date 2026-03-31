@@ -67,7 +67,7 @@
     </main>
 
     <footer class="site-footer">
-      <p>&copy; {{ "now" | date("yyyy") }} ARNOLOOG – Analog photography.</p>
+      <p>&copy; {{ now | date("yyyy") }} ARNOLOOG – Analog photography.</p>
     </footer>
 
     <script>
@@ -97,6 +97,30 @@
 
           window.addEventListener("mousemove", move);
           window.addEventListener("mouseup", up);
+        });
+      })();
+    </script>
+
+    <script>
+      (function () {
+        const letters = document.querySelectorAll(".logo--hang .hang");
+        if (!letters.length) return;
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+        const rand = (min, max) => min + Math.random() * (max - min);
+
+        letters.forEach((el) => {
+          const freeze = Math.random() < 0.20;
+
+          const amp = freeze ? rand(0.0, 0.5) : rand(2.4, 8.4);
+          const dur = rand(4.8, 9.2);
+          const delay = rand(-9.2, 0.0);
+          const wob = rand(-0.6, 0.6);
+
+          el.style.setProperty("--amp", amp.toFixed(2) + "deg");
+          el.style.setProperty("--dur", dur.toFixed(2) + "s");
+          el.style.setProperty("--delay", delay.toFixed(2) + "s");
+          el.style.setProperty("--wob", wob.toFixed(2) + "px");
         });
       })();
     </script>
