@@ -226,23 +226,28 @@ document.addEventListener("DOMContentLoaded", () => {
     await wait(120);
 
     // solve reverse — laatste move eindigt dus naar het midden
-    for (let step = moves.length - 1; step >= 0; step--) {
-      const t = 1 - (step / Math.max(1, moves.length - 1));
-      const duration = durAt(t);
-      const gapMs = gapAt(t);
+   for (let step = moves.length - 1; step >= 0; step--) {
+  const t = 1 - (step / Math.max(1, moves.length - 1));
 
-      const from = moves[step];
-      const piece = state[from];
-      if (piece === null) continue;
+  let duration = durAt(t);
+  let gapMs = gapAt(t);
 
-      frameTile(tileByPiece[piece], blank, startGap, startCell, duration, 1, 1);
+  // allerlaatste move sneller en iets strakker
+  if (step === 0) {
+    duration = Math.round(duration * 0.62);
+    gapMs = 8;
+  }
 
-      await wait(duration);
+  const from = moves[step];
+  const piece = state[from];
+  if (piece === null) continue;
 
-      [state[blank], state[from]] = [state[from], state[blank]];
-      blank = from;
+  frameTile(tileByPiece[piece], blank, startGap, startCell, duration, 1, 1);
 
-      await wait(gapMs);
+  await wait(duration);
+
+  [state[blank], state[from]] = [state[from], state[from] = state[blank]][0], blank = from;
+}
     }
 
     // center piece verschijnt -> alle 9 vakjes compleet
