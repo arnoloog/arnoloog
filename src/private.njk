@@ -47,7 +47,6 @@ permalink: /private/
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
   const overlay = document.getElementById("privateIntroOverlay");
   const grid = document.getElementById("privateIntroGrid");
   const finalTile = document.getElementById("privateIntroFinal");
@@ -58,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
 
-  const clamp01 = x => Math.max(0, Math.min(1,x));
+  const clamp01 = x => Math.max(0, Math.min(1, x));
   const lerp = (a,b,t)=>a+(b-a)*t;
   const smoothstep = t=>{ t=clamp01(t); return t*t*(3-2*t); };
   const curve = t=>smoothstep(Math.min(t,0.93));
@@ -76,7 +75,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function runIntro(){
-
     const rect = grid.getBoundingClientRect();
     const size = rect.width;
 
@@ -101,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tile.style.width = cell+"px";
       tile.style.height = cell+"px";
       tile.style.transition = dur
-        ? `transform ${dur}ms cubic-bezier(.2,1,.3,1)`
+        ? `transform ${dur}ms cubic-bezier(.2,1,.3,1), opacity ${Math.max(120, dur)}ms ease, width ${dur}ms cubic-bezier(.2,1,.3,1), height ${dur}ms cubic-bezier(.2,1,.3,1)`
         : "none";
       tile.style.transform = `translate(${p.x}px,${p.y}px) scale(${scale})`;
       tile.style.opacity = op;
@@ -128,21 +126,20 @@ document.addEventListener("DOMContentLoaded", () => {
       if(p!==null) place(map[p],i,startGap,startCell);
     });
 
-    place(finalTile,4,startGap,startCell,0,0.85,0);
+    place(finalTile,4,startGap,startCell,0,0.76,0);
 
     setTimeout(async()=>{
 
       // solve reverse
       for(let step=moves.length-1; step>=0; step--){
-
         const t = 1-(step/(moves.length-1));
         let dur = durAt(t);
         let gap = gapAt(t);
 
-        // 🔥 laatste move sneller
+        // laatste slide move sneller
         if(step===0){
-          dur = Math.round(dur*0.55);
-          gap = 6;
+          dur = Math.round(dur*0.42);
+          gap = 0;
         }
 
         const from = moves[step];
@@ -156,29 +153,36 @@ document.addEventListener("DOMContentLoaded", () => {
         [state[blank],state[from]]=[state[from],state[blank]];
         blank=from;
 
-        await wait(gap);
+        if (gap > 0) await wait(gap);
       }
 
-      // center piece verschijnt
-      place(finalTile,4,startGap,startCell,240,1,1);
-      await wait(260);
+      // laatste middenstuk: snel + click
+      place(finalTile,4,startGap,startCell,110,1.08,1);
+      await wait(120);
 
-      // 🔥 merge animatie
+      place(finalTile,4,startGap,startCell,90,0.97,1);
+      await wait(95);
+
+      place(finalTile,4,startGap,startCell,70,1,1);
+      finalTile.classList.add("private-intro-tile--click");
+      await wait(90);
+      finalTile.classList.remove("private-intro-tile--click");
+
+      // merge
       for(let i=0;i<9;i++){
-        place(map[i],i,endGap,endCell,420);
+        place(map[i],i,endGap,endCell,320);
       }
 
-      await wait(440);
+      await wait(340);
 
       // glow
       grid.classList.add("private-intro-grid--glow");
 
-      await wait(700);
+      await wait(620);
 
       overlay.classList.add("private-intro-overlay--done");
       gate.classList.remove("private-gate--hidden");
       gate.classList.add("private-gate--visible");
-
     },120);
   }
 
