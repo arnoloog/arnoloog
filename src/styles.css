@@ -584,6 +584,12 @@ body.page {
   border-color: rgba(255,255,255,0.16);
 }
 
+.private-intro-tile--click {
+  filter:
+    brightness(1.18)
+    drop-shadow(0 0 10px rgba(255,255,255,0.16));
+}
+
 /* unlocked */
 .private-content {
   width: 100%;
