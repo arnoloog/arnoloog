@@ -7,39 +7,39 @@ permalink: /private/
 <section class="private-page">
   <div class="private-wrap">
 
-    <div class="private-intro" id="privateIntro" aria-hidden="true">
-      <div class="private-puzzle" id="privatePuzzle">
-        <div class="private-tile"></div>
-        <div class="private-tile"></div>
-        <div class="private-tile"></div>
-        <div class="private-tile"></div>
-        <div class="private-tile"></div>
-        <div class="private-tile"></div>
-        <div class="private-tile"></div>
-        <div class="private-tile"></div>
-        <div class="private-tile private-tile--trigger" id="privateTrigger"></div>
+    <div class="private-board private-board--animating" id="privateBoard">
+      <div class="private-cell"></div>
+      <div class="private-cell"></div>
+      <div class="private-cell"></div>
+
+      <div class="private-cell"></div>
+
+      <div class="private-cell private-cell--gate" id="privateGateCell">
+        <div class="private-gate" id="privateGate">
+          <p class="private-kicker">private archive</p>
+          <h1 class="private-title">not all frames are meant to be seen.</h1>
+          <p class="private-text">enter to continue.</p>
+
+          <form class="private-form" id="privateForm" novalidate>
+            <input
+              type="password"
+              id="privatePassword"
+              class="private-input"
+              placeholder="password"
+              autocomplete="current-password"
+            >
+            <button class="private-button" type="submit">enter</button>
+          </form>
+
+          <p class="private-error" id="privateError" aria-live="polite"></p>
+        </div>
       </div>
-    </div>
 
-    <div class="private-gate private-gate--hidden" id="privateGate">
-      <p class="private-kicker">private archive</p>
-      <h1 class="private-title">not all frames are meant to be seen.</h1>
-      <p class="private-text">enter to continue.</p>
+      <div class="private-cell"></div>
 
-      <form class="private-form" id="privateForm" novalidate>
-        <input
-          type="password"
-          id="privatePassword"
-          class="private-input"
-          placeholder="password"
-          autocomplete="current-password"
-        >
-        <button id="privateSubmit" class="private-button" type="submit">
-          enter
-        </button>
-      </form>
-
-      <p class="private-error" id="privateError" aria-live="polite"></p>
+      <div class="private-cell"></div>
+      <div class="private-cell"></div>
+      <div class="private-cell"></div>
     </div>
 
     <div class="private-content private-content--hidden" id="privateContent">
@@ -80,16 +80,13 @@ document.addEventListener("DOMContentLoaded", () => {
     "close, but still locked."
   ];
 
-  const intro = document.getElementById("privateIntro");
-  const puzzle = document.getElementById("privatePuzzle");
-  const trigger = document.getElementById("privateTrigger");
+  const board = document.getElementById("privateBoard");
+  const cells = Array.from(board.querySelectorAll(".private-cell"));
   const gate = document.getElementById("privateGate");
   const form = document.getElementById("privateForm");
   const input = document.getElementById("privatePassword");
   const error = document.getElementById("privateError");
   const content = document.getElementById("privateContent");
-
-  if (!intro || !puzzle || !trigger || !gate || !form || !input || !error || !content) return;
 
   let lastMessage = "";
 
@@ -108,37 +105,34 @@ document.addEventListener("DOMContentLoaded", () => {
     const data = new TextEncoder().encode(value);
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+    return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
   }
 
-  function runIntro() {
-    const tiles = Array.from(puzzle.querySelectorAll(".private-tile"));
-    const others = tiles.filter((el) => el !== trigger);
+  function introAnimation() {
+    const movable = cells.filter(el => !el.classList.contains("private-cell--gate"));
 
-    others.forEach((tile, i) => {
-      const dx = ((i % 3) - 1) * (12 + Math.random() * 12);
-      const dy = (Math.floor(i / 3) - 1) * (12 + Math.random() * 12);
-      tile.style.transform = `translate(${dx}px, ${dy}px) scale(0.98)`;
+    movable.forEach((cell, i) => {
+      const row = Math.floor(i / 3);
+      const col = i % 3;
+
+      const dx = (col - 1) * (18 + Math.random() * 18);
+      const dy = (row - 1) * (18 + Math.random() * 18);
+
+      cell.style.transform = `translate(${dx}px, ${dy}px)`;
     });
-
-    trigger.style.transform = "scale(0.9)";
-    trigger.style.opacity = "0.82";
 
     requestAnimationFrame(() => {
       setTimeout(() => {
-        tiles.forEach((tile) => {
-          tile.style.transform = "translate(0,0) scale(1)";
-          tile.style.opacity = "1";
+        cells.forEach(cell => {
+          cell.style.transform = "translate(0,0)";
         });
-
-        trigger.classList.add("private-tile--open");
-      }, 220);
+      }, 120);
 
       setTimeout(() => {
-        gate.classList.remove("private-gate--hidden");
-        gate.classList.add("private-gate--visible");
+        board.classList.remove("private-board--animating");
+        board.classList.add("private-board--ready");
         input.focus();
-      }, 780);
+      }, 920);
     });
   }
 
@@ -156,15 +150,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const hashed = await sha256(value);
 
     if (hashed === HASH) {
-      gate.classList.remove("private-gate--visible");
-      gate.classList.add("private-gate--hidden");
-
-      intro.classList.add("private-intro--done");
+      board.classList.add("private-board--unlocking");
 
       setTimeout(() => {
         content.classList.remove("private-content--hidden");
         content.classList.add("private-content--visible");
-      }, 260);
+      }, 280);
     } else {
       error.textContent = randomMessage();
       input.value = "";
@@ -172,6 +163,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  runIntro();
+  introAnimation();
 });
 </script>
