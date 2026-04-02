@@ -31,20 +31,18 @@ permalink: /private/
 
     <!-- INTRO OVERLAY -->
     <div class="private-intro-overlay" id="privateIntroOverlay" aria-hidden="true">
-  <div class="private-intro-grid" id="privateIntroGrid">
-    <div class="private-intro-tile" data-piece="0" style="--piece-col:0; --piece-row:0;"></div>
-    <div class="private-intro-tile" data-piece="1" style="--piece-col:1; --piece-row:0;"></div>
-    <div class="private-intro-tile" data-piece="2" style="--piece-col:2; --piece-row:0;"></div>
-    <div class="private-intro-tile" data-piece="3" style="--piece-col:0; --piece-row:1;"></div>
-    <div class="private-intro-tile" data-piece="4" style="--piece-col:1; --piece-row:1;"></div>
-    <div class="private-intro-tile" data-piece="5" style="--piece-col:2; --piece-row:1;"></div>
-    <div class="private-intro-tile" data-piece="6" style="--piece-col:0; --piece-row:2;"></div>
-    <div class="private-intro-tile" data-piece="7" style="--piece-col:1; --piece-row:2;"></div>
-
-    <!-- laatste stukje van het slot: verschijnt pas op het einde -->
-    <div class="private-intro-tile private-intro-tile--final" id="privateIntroFinal" style="--piece-col:2; --piece-row:2;"></div>
-  </div>
-</div>
+      <div class="private-intro-grid" id="privateIntroGrid">
+        <div class="private-intro-tile" data-piece="0" style="--piece-col:0; --piece-row:0;"></div>
+        <div class="private-intro-tile" data-piece="1" style="--piece-col:1; --piece-row:0;"></div>
+        <div class="private-intro-tile" data-piece="2" style="--piece-col:2; --piece-row:0;"></div>
+        <div class="private-intro-tile" data-piece="3" style="--piece-col:0; --piece-row:1;"></div>
+        <div class="private-intro-tile" data-piece="4" style="--piece-col:1; --piece-row:1;"></div>
+        <div class="private-intro-tile" data-piece="5" style="--piece-col:2; --piece-row:1;"></div>
+        <div class="private-intro-tile" data-piece="6" style="--piece-col:0; --piece-row:2;"></div>
+        <div class="private-intro-tile" data-piece="7" style="--piece-col:1; --piece-row:2;"></div>
+        <div class="private-intro-tile private-intro-tile--final" id="privateIntroFinal" style="--piece-col:2; --piece-row:2;"></div>
+      </div>
+    </div>
 
     <!-- CONTENT NA JUIST WW -->
     <div class="private-content private-content--hidden" id="privateContent">
@@ -87,13 +85,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const overlay = document.getElementById("privateIntroOverlay");
   const introGrid = document.getElementById("privateIntroGrid");
-  const introTiles = Array.from(introGrid.querySelectorAll(".private-intro-tile"));
-
+  const finalTile = document.getElementById("privateIntroFinal");
   const gate = document.getElementById("privateGate");
   const form = document.getElementById("privateForm");
   const input = document.getElementById("privatePassword");
   const error = document.getElementById("privateError");
   const content = document.getElementById("privateContent");
+
+  if (!overlay || !introGrid || !finalTile || !gate || !form || !input || !error || !content) return;
+
+  const tiles = Array.from(introGrid.querySelectorAll(".private-intro-tile:not(.private-intro-tile--final)"));
 
   let lastMessage = "";
 
@@ -115,33 +116,98 @@ document.addEventListener("DOMContentLoaded", () => {
     return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
   }
 
+  function neighbors(i) {
+    const res = [];
+    const row = Math.floor(i / 3);
+    const col = i % 3;
+    if (col > 0) res.push(i - 1);
+    if (col < 2) res.push(i + 1);
+    if (row > 0) res.push(i - 3);
+    if (row < 2) res.push(i + 3);
+    return res;
+  }
+
   function runIntro() {
-    introTiles.forEach((tile) => {
-      const dx = (Math.random() - 0.5) * 220;
-      const dy = (Math.random() - 0.5) * 220;
-      const rot = (Math.random() - 0.5) * 12;
+    const gap = 6;
+    const rect = introGrid.getBoundingClientRect();
+    const cell = (rect.width - gap * 2) / 3;
 
-      tile.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
-      tile.style.opacity = "0.78";
+    const tileByPiece = {};
+    tiles.forEach((tile) => {
+      const piece = Number(tile.dataset.piece);
+      tileByPiece[piece] = tile;
     });
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          introTiles.forEach((tile) => {
-            tile.style.transform = "translate(0,0) rotate(0deg)";
-            tile.style.opacity = "1";
-          });
-        }, 120);
+    function posToXY(pos) {
+      const row = Math.floor(pos / 3);
+      const col = pos % 3;
+      return {
+        x: col * (cell + gap),
+        y: row * (cell + gap)
+      };
+    }
 
-        setTimeout(() => {
-          overlay.classList.add("private-intro-overlay--done");
-          gate.classList.remove("private-gate--hidden");
-          gate.classList.add("private-gate--visible");
-          input.focus();
-        }, 1150);
-      });
-    });
+    function setTileFrame(tile, pos, withTransition = false) {
+      const { x, y } = posToXY(pos);
+      tile.style.width = `${cell}px`;
+      tile.style.height = `${cell}px`;
+      tile.style.transition = withTransition
+        ? "transform 260ms cubic-bezier(.22, 1, .36, 1), opacity 260ms ease"
+        : "none";
+      tile.style.transform = `translate(${x}px, ${y}px)`;
+      tile.style.opacity = "1";
+    }
+
+    finalTile.style.width = `${cell}px`;
+    finalTile.style.height = `${cell}px`;
+
+    const finalPos = posToXY(8);
+    finalTile.style.transform = `translate(${finalPos.x}px, ${finalPos.y}px) scale(0.92)`;
+
+    let state = [0, 1, 2, 3, 4, 5, 6, 7, null];
+    let blank = 8;
+    let prev = -1;
+    const moves = [];
+
+    for (let k = 0; k < 10; k++) {
+      const options = neighbors(blank).filter((n) => n !== prev);
+      const pick = options[Math.floor(Math.random() * options.length)];
+      moves.push(pick);
+      prev = blank;
+      [state[blank], state[pick]] = [state[pick], state[blank]];
+      blank = pick;
+    }
+
+    for (let pos = 0; pos < state.length; pos++) {
+      const piece = state[pos];
+      if (piece === null) continue;
+      setTileFrame(tileByPiece[piece], pos, false);
+    }
+
+    setTimeout(async () => {
+      for (let step = moves.length - 1; step >= 0; step--) {
+        const from = moves[step];
+        const piece = state[from];
+        if (piece === null) continue;
+
+        setTileFrame(tileByPiece[piece], blank, true);
+        await new Promise((r) => setTimeout(r, 280));
+
+        [state[blank], state[from]] = [state[from], state[blank]];
+        blank = from;
+      }
+
+      finalTile.style.transition = "transform 260ms cubic-bezier(.22, 1, .36, 1), opacity 260ms ease";
+      finalTile.style.opacity = "1";
+      finalTile.style.transform = `translate(${finalPos.x}px, ${finalPos.y}px) scale(1)`;
+
+      setTimeout(() => {
+        overlay.classList.add("private-intro-overlay--done");
+        gate.classList.remove("private-gate--hidden");
+        gate.classList.add("private-gate--visible");
+        input.focus();
+      }, 420);
+    }, 120);
   }
 
   form.addEventListener("submit", async (e) => {
