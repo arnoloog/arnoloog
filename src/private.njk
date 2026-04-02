@@ -7,33 +7,59 @@ permalink: /private/
 <section class="private-page">
   <div class="private-wrap">
 
-    <div class="private-gate" id="privateGate">
-      <p class="private-kicker">private</p>
-      <h1 class="private-title">For close friends only</h1>
-      <p class="private-text">
-        Enter the password to view this private selection.
-      </p>
+    <div class="private-intro" id="privateIntro" aria-hidden="true">
+      <div class="private-puzzle" id="privatePuzzle">
+        <div class="private-tile"></div>
+        <div class="private-tile"></div>
+        <div class="private-tile"></div>
+        <div class="private-tile"></div>
+        <div class="private-tile"></div>
+        <div class="private-tile"></div>
+        <div class="private-tile"></div>
+        <div class="private-tile"></div>
+        <div class="private-tile private-tile--trigger" id="privateTrigger"></div>
+      </div>
+    </div>
 
-      <div class="private-form">
+    <div class="private-gate private-gate--hidden" id="privateGate">
+      <p class="private-kicker">private archive</p>
+      <h1 class="private-title">not all frames are meant to be seen.</h1>
+      <p class="private-text">enter to continue.</p>
+
+      <form class="private-form" id="privateForm" novalidate>
         <input
           type="password"
           id="privatePassword"
           class="private-input"
           placeholder="password"
+          autocomplete="current-password"
         >
-        <button id="privateSubmit" class="private-button" type="button">
+        <button id="privateSubmit" class="private-button" type="submit">
           enter
         </button>
-      </div>
+      </form>
 
-      <p class="private-error" id="privateError" hidden>
-        Wrong password.
-      </p>
+      <p class="private-error" id="privateError" aria-live="polite"></p>
     </div>
 
-    <div class="private-content" id="privateContent" hidden>
-      <h1>Private content</h1>
-      <p>Hier komen later je foto's.</p>
+    <div class="private-content private-content--hidden" id="privateContent">
+      <div class="private-head">
+        <p class="private-kicker">private archive</p>
+        <h2 class="private-title">unlocked.</h2>
+        <p class="private-text">hidden frames will appear here later.</p>
+      </div>
+
+      <div class="private-grid">
+        <div class="private-item private-item--placeholder"></div>
+        <div class="private-item private-item--placeholder"></div>
+        <div class="private-item private-item--placeholder"></div>
+        <div class="private-item private-item--placeholder"></div>
+        <div class="private-item private-item--placeholder"></div>
+        <div class="private-item private-item--placeholder"></div>
+        <div class="private-item private-item--placeholder"></div>
+        <div class="private-item private-item--placeholder"></div>
+        <div class="private-item private-item--placeholder"></div>
+      </div>
     </div>
 
   </div>
@@ -41,38 +67,111 @@ permalink: /private/
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const PASSWORD = "test123"; // verander later
-  const STORAGE_KEY = "arnoloog_private_access";
+  const HASH = "b33500f5b628db5ac1cc34651f20bb249f1bd27d6bbdc82e8b62d78847774163";
 
+  const messages = [
+    "not this one.",
+    "wrong frame.",
+    "almost, but not quite.",
+    "that’s not the key.",
+    "nice try.",
+    "nope, not this archive.",
+    "this frame stays hidden.",
+    "close, but still locked."
+  ];
+
+  const intro = document.getElementById("privateIntro");
+  const puzzle = document.getElementById("privatePuzzle");
+  const trigger = document.getElementById("privateTrigger");
   const gate = document.getElementById("privateGate");
-  const content = document.getElementById("privateContent");
+  const form = document.getElementById("privateForm");
   const input = document.getElementById("privatePassword");
-  const submit = document.getElementById("privateSubmit");
   const error = document.getElementById("privateError");
+  const content = document.getElementById("privateContent");
 
-  function unlock() {
-    gate.style.display = "none";
-    content.style.display = "block";
+  if (!intro || !puzzle || !trigger || !gate || !form || !input || !error || !content) return;
+
+  let lastMessage = "";
+
+  function randomMessage() {
+    let next = "";
+    let tries = 0;
+    do {
+      next = messages[Math.floor(Math.random() * messages.length)];
+      tries++;
+    } while (next === lastMessage && tries < 20);
+    lastMessage = next;
+    return next;
   }
 
-  function checkPassword() {
-    if (input.value === PASSWORD) {
-      localStorage.setItem(STORAGE_KEY, "yes");
-      unlock();
-    } else {
-      error.hidden = false;
+  async function sha256(value) {
+    const data = new TextEncoder().encode(value);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  function runIntro() {
+    const tiles = Array.from(puzzle.querySelectorAll(".private-tile"));
+    const others = tiles.filter((el) => el !== trigger);
+
+    others.forEach((tile, i) => {
+      const dx = ((i % 3) - 1) * (12 + Math.random() * 12);
+      const dy = (Math.floor(i / 3) - 1) * (12 + Math.random() * 12);
+      tile.style.transform = `translate(${dx}px, ${dy}px) scale(0.98)`;
+    });
+
+    trigger.style.transform = "scale(0.9)";
+    trigger.style.opacity = "0.82";
+
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        tiles.forEach((tile) => {
+          tile.style.transform = "translate(0,0) scale(1)";
+          tile.style.opacity = "1";
+        });
+
+        trigger.classList.add("private-tile--open");
+      }, 220);
+
+      setTimeout(() => {
+        gate.classList.remove("private-gate--hidden");
+        gate.classList.add("private-gate--visible");
+        input.focus();
+      }, 780);
+    });
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const value = input.value.trim();
+    if (!value) {
+      error.textContent = randomMessage();
       input.value = "";
+      input.focus();
+      return;
     }
-  }
 
-  if (localStorage.getItem(STORAGE_KEY) === "yes") {
-    unlock();
-  }
+    const hashed = await sha256(value);
 
-  submit.addEventListener("click", checkPassword);
+    if (hashed === HASH) {
+      gate.classList.remove("private-gate--visible");
+      gate.classList.add("private-gate--hidden");
 
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") checkPassword();
+      intro.classList.add("private-intro--done");
+
+      setTimeout(() => {
+        content.classList.remove("private-content--hidden");
+        content.classList.add("private-content--visible");
+      }, 260);
+    } else {
+      error.textContent = randomMessage();
+      input.value = "";
+      input.focus();
+    }
   });
+
+  runIntro();
 });
 </script>
