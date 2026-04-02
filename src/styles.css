@@ -546,6 +546,15 @@ body.page {
   position: relative;
   width: min(560px, 78vw);
   aspect-ratio: 1 / 1;
+  transition: filter 380ms ease, transform 380ms ease;
+}
+
+.private-intro-grid--glow {
+  filter:
+    brightness(1.18)
+    drop-shadow(0 0 12px rgba(255,255,255,0.18))
+    drop-shadow(0 0 26px rgba(255,255,255,0.08));
+  transform: scale(1.02);
 }
 
 .private-intro-tile {
@@ -566,7 +575,7 @@ body.page {
 
 .private-intro-tile--final {
   opacity: 0;
-  transform: scale(0.92);
+  transform: scale(0.88);
   border-color: rgba(255,255,255,0.16);
 }
 
