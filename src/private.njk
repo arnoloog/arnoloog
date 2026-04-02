@@ -38,7 +38,7 @@ permalink: /private/
         <div class="private-intro-tile" data-piece="3" style="--piece-col:0; --piece-row:1;"></div>
 
         <!-- middenstuk verschijnt pas op het einde -->
-        <div class="private-intro-tile private-intro-tile--final" id="privateIntroFinal" style="--piece-col:1; --piece-row:1;"></div>
+        <div class="private-intro-tile private-intro-tile--final" id="privateIntroFinal" data-piece="4" style="--piece-col:1; --piece-row:1;"></div>
 
         <div class="private-intro-tile" data-piece="5" style="--piece-col:2; --piece-row:1;"></div>
         <div class="private-intro-tile" data-piece="6" style="--piece-col:0; --piece-row:2;"></div>
@@ -73,6 +73,7 @@ permalink: /private/
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+  // als je huidige hash al werkt, laat die gerust zo
   const HASH = "b33500f5b628db5ac1cc34651f20bb249f1bd27d6bbdc82e8b62d78847774163";
 
   const messages = [
@@ -97,7 +98,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!overlay || !introGrid || !finalTile || !gate || !form || !input || !error || !content) return;
 
-  const tiles = Array.from(introGrid.querySelectorAll(".private-intro-tile:not(.private-intro-tile--final)"));
+  const movingTiles = Array.from(introGrid.querySelectorAll(".private-intro-tile:not(.private-intro-tile--final)"));
+  const allTiles = Array.from(introGrid.querySelectorAll(".private-intro-tile"));
 
   let lastMessage = "";
 
@@ -117,17 +119,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-  }
-
-  function neighbors(i) {
-    const res = [];
-    const row = Math.floor(i / 3);
-    const col = i % 3;
-    if (col > 0) res.push(i - 1);
-    if (col < 2) res.push(i + 1);
-    if (row > 0) res.push(i - 3);
-    if (row < 2) res.push(i + 3);
-    return res;
   }
 
   function wait(ms) {
@@ -161,18 +152,32 @@ document.addEventListener("DOMContentLoaded", () => {
     return Math.round(lerp(95, 20, u));
   }
 
+  function neighbors(i) {
+    const res = [];
+    const row = Math.floor(i / 3);
+    const col = i % 3;
+    if (col > 0) res.push(i - 1);
+    if (col < 2) res.push(i + 1);
+    if (row > 0) res.push(i - 3);
+    if (row < 2) res.push(i + 3);
+    return res;
+  }
+
   async function runIntro() {
-    const gap = 6;
-    const rect = introGrid.getBoundingClientRect();
-    const cell = (rect.width - gap * 2) / 3;
+    const boardRect = introGrid.getBoundingClientRect();
+    const boardSize = boardRect.width;
+    const startGap = 6;
+    const endGap = 0;
+    const startCell = (boardSize - startGap * 2) / 3;
+    const endCell = boardSize / 3;
 
     const tileByPiece = {};
-    tiles.forEach((tile) => {
+    allTiles.forEach((tile) => {
       const piece = Number(tile.dataset.piece);
       tileByPiece[piece] = tile;
     });
 
-    function posToXY(pos) {
+    function posToXY(pos, gap, cell) {
       const row = Math.floor(pos / 3);
       const col = pos % 3;
       return {
@@ -181,30 +186,24 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     }
 
-    function setTileFrame(tile, pos, withTransition = false, duration = 0) {
-      const { x, y } = posToXY(pos);
+    function frameTile(tile, pos, gap, cell, duration = 0, opacity = 1, scale = 1) {
+      const { x, y } = posToXY(pos, gap, cell);
       tile.style.width = `${cell}px`;
       tile.style.height = `${cell}px`;
-      tile.style.transition = withTransition
-        ? `transform ${duration}ms cubic-bezier(.2, 1, .3, 1), opacity ${duration}ms ease`
+      tile.style.transition = duration
+        ? `transform ${duration}ms cubic-bezier(.2, 1, .3, 1), opacity ${duration}ms ease, width ${duration}ms cubic-bezier(.2, 1, .3, 1), height ${duration}ms cubic-bezier(.2, 1, .3, 1)`
         : "none";
-      tile.style.transform = `translate(${x}px, ${y}px)`;
-      tile.style.opacity = "1";
+      tile.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+      tile.style.opacity = opacity;
     }
 
-    finalTile.style.width = `${cell}px`;
-    finalTile.style.height = `${cell}px`;
-
-    const finalPos = posToXY(4);
-    finalTile.style.transform = `translate(${finalPos.x}px, ${finalPos.y}px) scale(0.88)`;
-
-    // middenvak is leeg bij start/einde
+    // solved state met leeg midden
     let state = [0, 1, 2, 3, null, 5, 6, 7, 8];
     let blank = 4;
     let prev = -1;
     const moves = [];
 
-    // iets meer moves zodat het echt als puzzel voelt
+    // shuffle via echte slide-puzzle moves
     for (let k = 0; k < 14; k++) {
       const options = neighbors(blank).filter((n) => n !== prev);
       const pick = options[Math.floor(Math.random() * options.length)];
@@ -214,16 +213,19 @@ document.addEventListener("DOMContentLoaded", () => {
       blank = pick;
     }
 
-    // start in geshuffelde staat
+    // start in geshuffelde toestand
     for (let pos = 0; pos < state.length; pos++) {
       const piece = state[pos];
       if (piece === null) continue;
-      setTileFrame(tileByPiece[piece], pos, false);
+      frameTile(tileByPiece[piece], pos, startGap, startCell, 0, 1, 1);
     }
+
+    // final middle piece al op zijn plek maar onzichtbaar
+    frameTile(finalTile, 4, startGap, startCell, 0, 0, 0.88);
 
     await wait(120);
 
-    // solve reverse met homeachtige timing
+    // solve reverse — laatste move eindigt dus naar het midden
     for (let step = moves.length - 1; step >= 0; step--) {
       const t = 1 - (step / Math.max(1, moves.length - 1));
       const duration = durAt(t);
@@ -233,7 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const piece = state[from];
       if (piece === null) continue;
 
-      setTileFrame(tileByPiece[piece], blank, true, duration);
+      frameTile(tileByPiece[piece], blank, startGap, startCell, duration, 1, 1);
 
       await wait(duration);
 
@@ -243,17 +245,21 @@ document.addEventListener("DOMContentLoaded", () => {
       await wait(gapMs);
     }
 
-    // laatste middenstuk verschijnt
-    finalTile.style.transition = "transform 260ms cubic-bezier(.22, 1, .36, 1), opacity 260ms ease";
-    finalTile.style.opacity = "1";
-    finalTile.style.transform = `translate(${finalPos.x}px, ${finalPos.y}px) scale(1)`;
+    // center piece verschijnt -> alle 9 vakjes compleet
+    frameTile(finalTile, 4, startGap, startCell, 260, 1, 1);
+    await wait(280);
 
-    await wait(260);
+    // alles smelt samen naar 1 groot slotvlak
+    for (let piece = 0; piece <= 8; piece++) {
+      frameTile(tileByPiece[piece], piece, endGap, endCell, 420, 1, 1);
+    }
 
-    // holy glow op het hele slot
+    introGrid.classList.add("private-intro-grid--merged");
+    await wait(440);
+
+    // glow op heel slot
     introGrid.classList.add("private-intro-grid--glow");
-
-    await wait(780);
+    await wait(760);
 
     overlay.classList.add("private-intro-overlay--done");
     gate.classList.remove("private-gate--hidden");
