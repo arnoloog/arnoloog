@@ -36,11 +36,14 @@ permalink: /private/
         <div class="private-intro-tile" data-piece="1" style="--piece-col:1; --piece-row:0;"></div>
         <div class="private-intro-tile" data-piece="2" style="--piece-col:2; --piece-row:0;"></div>
         <div class="private-intro-tile" data-piece="3" style="--piece-col:0; --piece-row:1;"></div>
-        <div class="private-intro-tile" data-piece="4" style="--piece-col:1; --piece-row:1;"></div>
+
+        <!-- middenstuk verschijnt pas op het einde -->
+        <div class="private-intro-tile private-intro-tile--final" id="privateIntroFinal" style="--piece-col:1; --piece-row:1;"></div>
+
         <div class="private-intro-tile" data-piece="5" style="--piece-col:2; --piece-row:1;"></div>
         <div class="private-intro-tile" data-piece="6" style="--piece-col:0; --piece-row:2;"></div>
         <div class="private-intro-tile" data-piece="7" style="--piece-col:1; --piece-row:2;"></div>
-        <div class="private-intro-tile private-intro-tile--final" id="privateIntroFinal" style="--piece-col:2; --piece-row:2;"></div>
+        <div class="private-intro-tile" data-piece="8" style="--piece-col:2; --piece-row:2;"></div>
       </div>
     </div>
 
@@ -127,7 +130,38 @@ document.addEventListener("DOMContentLoaded", () => {
     return res;
   }
 
-  function runIntro() {
+  function wait(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  function clamp01(x) {
+    return Math.max(0, Math.min(1, x));
+  }
+
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  function smoothstep(t) {
+    t = clamp01(t);
+    return t * t * (3 - 2 * t);
+  }
+
+  function curve(t) {
+    return smoothstep(Math.min(t, 0.93));
+  }
+
+  function durAt(t) {
+    const u = curve(t);
+    return Math.round(lerp(160, 50, u));
+  }
+
+  function gapAt(t) {
+    const u = curve(t);
+    return Math.round(lerp(95, 20, u));
+  }
+
+  async function runIntro() {
     const gap = 6;
     const rect = introGrid.getBoundingClientRect();
     const cell = (rect.width - gap * 2) / 3;
@@ -147,12 +181,12 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     }
 
-    function setTileFrame(tile, pos, withTransition = false) {
+    function setTileFrame(tile, pos, withTransition = false, duration = 0) {
       const { x, y } = posToXY(pos);
       tile.style.width = `${cell}px`;
       tile.style.height = `${cell}px`;
       tile.style.transition = withTransition
-        ? "transform 260ms cubic-bezier(.22, 1, .36, 1), opacity 260ms ease"
+        ? `transform ${duration}ms cubic-bezier(.2, 1, .3, 1), opacity ${duration}ms ease`
         : "none";
       tile.style.transform = `translate(${x}px, ${y}px)`;
       tile.style.opacity = "1";
@@ -161,15 +195,17 @@ document.addEventListener("DOMContentLoaded", () => {
     finalTile.style.width = `${cell}px`;
     finalTile.style.height = `${cell}px`;
 
-    const finalPos = posToXY(8);
-    finalTile.style.transform = `translate(${finalPos.x}px, ${finalPos.y}px) scale(0.92)`;
+    const finalPos = posToXY(4);
+    finalTile.style.transform = `translate(${finalPos.x}px, ${finalPos.y}px) scale(0.88)`;
 
-    let state = [0, 1, 2, 3, 4, 5, 6, 7, null];
-    let blank = 8;
+    // middenvak is leeg bij start/einde
+    let state = [0, 1, 2, 3, null, 5, 6, 7, 8];
+    let blank = 4;
     let prev = -1;
     const moves = [];
 
-    for (let k = 0; k < 10; k++) {
+    // iets meer moves zodat het echt als puzzel voelt
+    for (let k = 0; k < 14; k++) {
       const options = neighbors(blank).filter((n) => n !== prev);
       const pick = options[Math.floor(Math.random() * options.length)];
       moves.push(pick);
@@ -178,36 +214,51 @@ document.addEventListener("DOMContentLoaded", () => {
       blank = pick;
     }
 
+    // start in geshuffelde staat
     for (let pos = 0; pos < state.length; pos++) {
       const piece = state[pos];
       if (piece === null) continue;
       setTileFrame(tileByPiece[piece], pos, false);
     }
 
-    setTimeout(async () => {
-      for (let step = moves.length - 1; step >= 0; step--) {
-        const from = moves[step];
-        const piece = state[from];
-        if (piece === null) continue;
+    await wait(120);
 
-        setTileFrame(tileByPiece[piece], blank, true);
-        await new Promise((r) => setTimeout(r, 280));
+    // solve reverse met homeachtige timing
+    for (let step = moves.length - 1; step >= 0; step--) {
+      const t = 1 - (step / Math.max(1, moves.length - 1));
+      const duration = durAt(t);
+      const gapMs = gapAt(t);
 
-        [state[blank], state[from]] = [state[from], state[blank]];
-        blank = from;
-      }
+      const from = moves[step];
+      const piece = state[from];
+      if (piece === null) continue;
 
-      finalTile.style.transition = "transform 260ms cubic-bezier(.22, 1, .36, 1), opacity 260ms ease";
-      finalTile.style.opacity = "1";
-      finalTile.style.transform = `translate(${finalPos.x}px, ${finalPos.y}px) scale(1)`;
+      setTileFrame(tileByPiece[piece], blank, true, duration);
 
-      setTimeout(() => {
-        overlay.classList.add("private-intro-overlay--done");
-        gate.classList.remove("private-gate--hidden");
-        gate.classList.add("private-gate--visible");
-        input.focus();
-      }, 420);
-    }, 120);
+      await wait(duration);
+
+      [state[blank], state[from]] = [state[from], state[blank]];
+      blank = from;
+
+      await wait(gapMs);
+    }
+
+    // laatste middenstuk verschijnt
+    finalTile.style.transition = "transform 260ms cubic-bezier(.22, 1, .36, 1), opacity 260ms ease";
+    finalTile.style.opacity = "1";
+    finalTile.style.transform = `translate(${finalPos.x}px, ${finalPos.y}px) scale(1)`;
+
+    await wait(260);
+
+    // holy glow op het hele slot
+    introGrid.classList.add("private-intro-grid--glow");
+
+    await wait(780);
+
+    overlay.classList.add("private-intro-overlay--done");
+    gate.classList.remove("private-gate--hidden");
+    gate.classList.add("private-gate--visible");
+    input.focus();
   }
 
   form.addEventListener("submit", async (e) => {
