@@ -31,18 +31,20 @@ permalink: /private/
 
     <!-- INTRO OVERLAY -->
     <div class="private-intro-overlay" id="privateIntroOverlay" aria-hidden="true">
-      <div class="private-intro-grid" id="privateIntroGrid">
-        <div class="private-intro-tile"></div>
-        <div class="private-intro-tile"></div>
-        <div class="private-intro-tile"></div>
-        <div class="private-intro-tile"></div>
-        <div class="private-intro-tile private-intro-tile--center"></div>
-        <div class="private-intro-tile"></div>
-        <div class="private-intro-tile"></div>
-        <div class="private-intro-tile"></div>
-        <div class="private-intro-tile"></div>
-      </div>
-    </div>
+  <div class="private-intro-grid" id="privateIntroGrid">
+    <div class="private-intro-tile" data-piece="0" style="--piece-col:0; --piece-row:0;"></div>
+    <div class="private-intro-tile" data-piece="1" style="--piece-col:1; --piece-row:0;"></div>
+    <div class="private-intro-tile" data-piece="2" style="--piece-col:2; --piece-row:0;"></div>
+    <div class="private-intro-tile" data-piece="3" style="--piece-col:0; --piece-row:1;"></div>
+    <div class="private-intro-tile" data-piece="4" style="--piece-col:1; --piece-row:1;"></div>
+    <div class="private-intro-tile" data-piece="5" style="--piece-col:2; --piece-row:1;"></div>
+    <div class="private-intro-tile" data-piece="6" style="--piece-col:0; --piece-row:2;"></div>
+    <div class="private-intro-tile" data-piece="7" style="--piece-col:1; --piece-row:2;"></div>
+
+    <!-- laatste stukje van het slot: verschijnt pas op het einde -->
+    <div class="private-intro-tile private-intro-tile--final" id="privateIntroFinal" style="--piece-col:2; --piece-row:2;"></div>
+  </div>
+</div>
 
     <!-- CONTENT NA JUIST WW -->
     <div class="private-content private-content--hidden" id="privateContent">
