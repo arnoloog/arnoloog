@@ -7,41 +7,54 @@ permalink: /private/
 <section class="private-page">
   <div class="private-wrap">
 
-    <div class="private-board private-board--animating" id="privateBoard">
-      <div class="private-cell"></div>
-      <div class="private-cell"></div>
-      <div class="private-cell"></div>
+    <!-- RUSTIGE ECHTE LAYOUT -->
+    <div class="private-gate private-gate--hidden" id="privateGate">
+      <p class="private-kicker">private archive</p>
+      <h1 class="private-title">not all frames are meant to be seen.</h1>
+      <p class="private-text">enter to continue.</p>
 
-      <div class="private-cell"></div>
+      <form class="private-form" id="privateForm" novalidate>
+        <input
+          type="password"
+          id="privatePassword"
+          class="private-input"
+          placeholder="password"
+          autocomplete="current-password"
+        >
+        <button id="privateSubmit" class="private-button" type="submit">
+          enter
+        </button>
+      </form>
 
-      <div class="private-cell private-cell--gate" id="privateGateCell">
-        <div class="private-gate" id="privateGate">
-          <p class="private-kicker">private archive</p>
-          <h1 class="private-title">not all frames are meant to be seen.</h1>
-          <p class="private-text">enter to continue.</p>
-
-          <form class="private-form" id="privateForm" novalidate>
-            <input
-              type="password"
-              id="privatePassword"
-              class="private-input"
-              placeholder="password"
-              autocomplete="current-password"
-            >
-            <button class="private-button" type="submit">enter</button>
-          </form>
-
-          <p class="private-error" id="privateError" aria-live="polite"></p>
-        </div>
-      </div>
-
-      <div class="private-cell"></div>
-
-      <div class="private-cell"></div>
-      <div class="private-cell"></div>
-      <div class="private-cell"></div>
+      <p class="private-error" id="privateError" aria-live="polite"></p>
     </div>
 
+    <!-- OVERLAY ANIMATIE: ZELFDE LAYOUT, OPGESPLITST IN 3x3 -->
+    <div class="private-intro-overlay" id="privateIntroOverlay" aria-hidden="true">
+      <div class="private-intro-board" id="privateIntroBoard">
+        {% for i in [0,1,2,3,4,5,6,7,8] %}
+          <div
+            class="private-intro-tile"
+            style="--tile-col: {{ i % 3 }}; --tile-row: {{ (i / 3) | int }};"
+          >
+            <div class="private-intro-scene">
+              <div class="private-intro-scene__inner">
+                <p class="private-kicker">private archive</p>
+                <h1 class="private-title">not all frames are meant to be seen.</h1>
+                <p class="private-text">enter to continue.</p>
+
+                <div class="private-form private-form--fake">
+                  <div class="private-input private-input--fake">password</div>
+                  <div class="private-button private-button--fake">enter</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- CONTENT NA JUIST WW -->
     <div class="private-content private-content--hidden" id="privateContent">
       <div class="private-head">
         <p class="private-kicker">private archive</p>
@@ -67,7 +80,8 @@ permalink: /private/
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const HASH = "b33500f5b628db5ac1cc34651f20bb249f1bd27d6bbdc82e8b62d78847774163";
+  // laat je huidige werkende hash hier staan als die al juist is
+  const HASH = "REPLACE_WITH_YOUR_WORKING_HASH";
 
   const messages = [
     "not this one.",
@@ -80,8 +94,10 @@ document.addEventListener("DOMContentLoaded", () => {
     "close, but still locked."
   ];
 
-  const board = document.getElementById("privateBoard");
-  const cells = Array.from(board.querySelectorAll(".private-cell"));
+  const overlay = document.getElementById("privateIntroOverlay");
+  const board = document.getElementById("privateIntroBoard");
+  const tiles = Array.from(board.querySelectorAll(".private-intro-tile"));
+
   const gate = document.getElementById("privateGate");
   const form = document.getElementById("privateForm");
   const input = document.getElementById("privatePassword");
@@ -105,34 +121,35 @@ document.addEventListener("DOMContentLoaded", () => {
     const data = new TextEncoder().encode(value);
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
   }
 
-  function introAnimation() {
-    const movable = cells.filter(el => !el.classList.contains("private-cell--gate"));
+  function runIntro() {
+    tiles.forEach((tile) => {
+      const dx = (Math.random() - 0.5) * 220;
+      const dy = (Math.random() - 0.5) * 220;
+      const rot = (Math.random() - 0.5) * 10;
 
-    movable.forEach((cell, i) => {
-      const row = Math.floor(i / 3);
-      const col = i % 3;
-
-      const dx = (col - 1) * (18 + Math.random() * 18);
-      const dy = (row - 1) * (18 + Math.random() * 18);
-
-      cell.style.transform = `translate(${dx}px, ${dy}px)`;
+      tile.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
+      tile.style.opacity = "0.82";
     });
 
     requestAnimationFrame(() => {
-      setTimeout(() => {
-        cells.forEach(cell => {
-          cell.style.transform = "translate(0,0)";
-        });
-      }, 120);
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          tiles.forEach((tile) => {
+            tile.style.transform = "translate(0,0) rotate(0deg)";
+            tile.style.opacity = "1";
+          });
+        }, 120);
 
-      setTimeout(() => {
-        board.classList.remove("private-board--animating");
-        board.classList.add("private-board--ready");
-        input.focus();
-      }, 920);
+        setTimeout(() => {
+          overlay.classList.add("private-intro-overlay--done");
+          gate.classList.remove("private-gate--hidden");
+          gate.classList.add("private-gate--visible");
+          input.focus();
+        }, 1150);
+      });
     });
   }
 
@@ -150,12 +167,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const hashed = await sha256(value);
 
     if (hashed === HASH) {
-      board.classList.add("private-board--unlocking");
+      gate.classList.remove("private-gate--visible");
+      gate.classList.add("private-gate--hidden");
 
       setTimeout(() => {
         content.classList.remove("private-content--hidden");
         content.classList.add("private-content--visible");
-      }, 280);
+      }, 260);
     } else {
       error.textContent = randomMessage();
       input.value = "";
@@ -163,6 +181,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  introAnimation();
+  runIntro();
 });
 </script>
