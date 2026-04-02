@@ -549,12 +549,17 @@ body.page {
   transition: filter 380ms ease, transform 380ms ease;
 }
 
+.private-intro-grid--merged .private-intro-tile {
+  border-color: rgba(255,255,255,0.06);
+  box-shadow: none;
+}
+
 .private-intro-grid--glow {
   filter:
     brightness(1.18)
-    drop-shadow(0 0 12px rgba(255,255,255,0.18))
-    drop-shadow(0 0 26px rgba(255,255,255,0.08));
-  transform: scale(1.02);
+    drop-shadow(0 0 14px rgba(255,255,255,0.20))
+    drop-shadow(0 0 34px rgba(255,255,255,0.10));
+  transform: scale(1.025);
 }
 
 .private-intro-tile {
@@ -570,7 +575,7 @@ body.page {
   box-shadow:
     inset 0 0 0 1px rgba(255,255,255,0.02),
     0 0 0 1px rgba(0,0,0,0.35);
-  will-change: transform, opacity;
+  will-change: transform, opacity, width, height;
 }
 
 .private-intro-tile--final {
