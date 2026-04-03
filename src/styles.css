@@ -559,9 +559,9 @@ body.page {
   position: absolute;
   background-color: #050505;
   border: 1px solid #111;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='black'/%3E%3Cg fill='none' stroke='white' stroke-width='12' stroke-linecap='round' stroke-linejoin='round' opacity='0.96'%3E%3Cpath d='M112 133V96c0-23 16-39 38-39s38 16 38 39v37'/%3E%3Crect x='86' y='133' width='128' height='102' rx='16'/%3E%3Ccircle cx='150' cy='183' r='11'/%3E%3Cpath d='M150 194v17'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='black'/%3E%3Cg fill='none' stroke='white' stroke-width='11' stroke-linecap='round' stroke-linejoin='round' opacity='0.97'%3E%3Cpath d='M116 132V101c0-21 15-36 34-36s34 15 34 36v31'/%3E%3Crect x='88' y='132' width='124' height='100' rx='18'/%3E%3Cpath d='M150 174c-8 0-14 6-14 14 0 6 3 10 8 12v16h12v-16c5-2 8-6 8-12 0-8-6-14-14-14Z'/%3E%3Ccircle cx='150' cy='188' r='3.5' fill='white' stroke='none'/%3E%3C/g%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-size: 276% 276%;
+  background-size: 300% 300%;
   background-position:
     calc(var(--piece-col) * 50%)
     calc(var(--piece-row) * 50%);
