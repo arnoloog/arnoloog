@@ -559,7 +559,7 @@ body.page {
   position: absolute;
   background-color: #050505;
   border: 1px solid #111;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='black'/%3E%3Cg fill='none' stroke='white' stroke-width='12' stroke-linecap='round' stroke-linejoin='round' opacity='0.96'%3E%3Cpath d='M105 135V95c0-26 19-45 45-45s45 19 45 45v40'/%3E%3Crect x='82' y='135' width='136' height='110' rx='16'/%3E%3Ccircle cx='150' cy='186' r='12'/%3E%3Cpath d='M150 198v18'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='black'/%3E%3Cg fill='none' stroke='white' stroke-width='12' stroke-linecap='round' stroke-linejoin='round' opacity='0.96'%3E%3Cpath d='M112 133V96c0-23 16-39 38-39s38 16 38 39v37'/%3E%3Crect x='86' y='133' width='128' height='102' rx='16'/%3E%3Ccircle cx='150' cy='183' r='11'/%3E%3Cpath d='M150 194v17'/%3E%3C/g%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-size: 276% 276%;
   background-position:
