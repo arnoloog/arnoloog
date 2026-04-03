@@ -7,7 +7,6 @@ permalink: /private/
 <section class="private-page">
   <div class="private-wrap">
 
-    <!-- RUSTIGE LAYOUT -->
     <div class="private-gate private-gate--hidden" id="privateGate">
       <p class="private-kicker">private archive</p>
       <h1 class="private-title">not all frames are meant to be seen.</h1>
@@ -27,10 +26,8 @@ permalink: /private/
       <p class="private-error" id="privateError" aria-live="polite"></p>
     </div>
 
-    <!-- INTRO PUZZLE -->
     <div class="private-intro-overlay" id="privateIntroOverlay" aria-hidden="true">
       <div class="private-intro-grid" id="privateIntroGrid">
-
         {% for i in [0,1,2,3,5,6,7,8] %}
           <div
             class="private-intro-tile"
@@ -39,18 +36,15 @@ permalink: /private/
           ></div>
         {% endfor %}
 
-        <!-- center piece -->
         <div
           class="private-intro-tile private-intro-tile--final"
           id="privateIntroFinal"
           data-piece="4"
           style="--piece-col:1; --piece-row:1;"
         ></div>
-
       </div>
     </div>
 
-    <!-- CONTENT -->
     <div class="private-content private-content--hidden" id="privateContent">
       <div class="private-head">
         <p class="private-kicker">private archive</p>
@@ -136,19 +130,8 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   const curve = (t) => smoothstep(Math.min(t, 0.93));
 
-  const durAt = (t) => Math.round(lerp(160, 50, curve(t)));
-  const gapAt = (t) => Math.round(lerp(95, 20, curve(t)));
-
-  function neighbors(i) {
-    const r = Math.floor(i / 3);
-    const c = i % 3;
-    const n = [];
-    if (c > 0) n.push(i - 1);
-    if (c < 2) n.push(i + 1);
-    if (r > 0) n.push(i - 3);
-    if (r < 2) n.push(i + 3);
-    return n;
-  }
+  const durAt = (t) => Math.round(lerp(160, 55, curve(t)));
+  const gapAt = (t) => Math.round(lerp(95, 18, curve(t)));
 
   async function runIntro() {
     const rect = grid.getBoundingClientRect();
@@ -161,19 +144,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const endCell = size / 3;
 
     const map = {};
-    allTiles.forEach((t) => {
-      map[Number(t.dataset.piece)] = t;
+    allTiles.forEach((tile) => {
+      map[Number(tile.dataset.piece)] = tile;
     });
 
-    function pos(i, gap, cell) {
+    function pos(index, gap, cell) {
       return {
-        x: (i % 3) * (cell + gap),
-        y: Math.floor(i / 3) * (cell + gap)
+        x: (index % 3) * (cell + gap),
+        y: Math.floor(index / 3) * (cell + gap)
       };
     }
 
-    function place(tile, i, gap, cell, dur = 0, scale = 1, op = 1) {
-      const p = pos(i, gap, cell);
+    function place(tile, index, gap, cell, dur = 0, scale = 1, op = 1) {
+      const p = pos(index, gap, cell);
       tile.style.width = cell + "px";
       tile.style.height = cell + "px";
       tile.style.transition = dur
@@ -183,90 +166,88 @@ document.addEventListener("DOMContentLoaded", () => {
       tile.style.opacity = op;
     }
 
-    // solved state met midden leeg
-    let state = [0, 1, 2, 3, null, 5, 6, 7, 8];
-    let blank = 4;
-    let prev = -1;
-    const moves = [];
+    // vaste start-opstelling, midden leeg, stuk 1 onderaan midden
+    const startState = {
+      0: 2,
+      1: 7, // moet als laatste naar boven
+      2: 1,
+      3: 6,
+      5: 5,
+      6: 0,
+      7: 8,
+      8: 3
+    };
 
-    for (let k = 0; k < 14; k++) {
-      const opts = neighbors(blank).filter((n) => n !== prev);
-      const pick = opts[Math.floor(Math.random() * opts.length)];
-      moves.push(pick);
-      prev = blank;
-      [state[blank], state[pick]] = [state[pick], state[blank]];
-      blank = pick;
-    }
-
-    // initial render
-    state.forEach((p, i) => {
-      if (p !== null) place(map[p], i, startGap, startCell);
+    Object.entries(startState).forEach(([piece, slot]) => {
+      place(map[Number(piece)], slot, startGap, startCell, 0, 1, 1);
     });
 
-    place(finalTile, 4, startGap, startCell, 0, 0.76, 0);
+    place(finalTile, 4, startGap, startCell, 0, 0.72, 0);
 
-    await wait(120);
+    // vaste volgorde, laatste is ALTIJD bovenste middelste blokje
+    const moveOrder = [
+      { piece: 0, to: 0 },
+      { piece: 2, to: 2 },
+      { piece: 3, to: 3 },
+      { piece: 6, to: 6 },
+      { piece: 7, to: 7 },
+      { piece: 8, to: 8 }
+    ];
 
-    // solve reverse
-    for (let step = moves.length - 1; step >= 0; step--) {
-      const t = 1 - (step / (moves.length - 1));
-      let dur = durAt(t);
-      let gap = gapAt(t);
+    await wait(140);
 
-      // laatste slide move sneller
-      if (step === 0) {
-        dur = Math.round(dur * 0.42);
-        gap = 0;
-      }
+    for (let i = 0; i < moveOrder.length; i++) {
+      const t = i / Math.max(1, moveOrder.length - 1);
+      const dur = durAt(t);
+      const gap = gapAt(t);
 
-      const from = moves[step];
-      const piece = state[from];
-      if (piece === null) continue;
-
-      place(map[piece], blank, startGap, startCell, dur);
+      const step = moveOrder[i];
+      place(map[step.piece], step.to, startGap, startCell, dur);
 
       await wait(dur);
-
-      [state[blank], state[from]] = [state[from], state[blank]];
-      blank = from;
-
-      if (gap > 0) await wait(gap);
+      await wait(gap);
     }
 
-    // center piece: snel verschijnen
-    place(finalTile, 4, startGap, startCell, 90, 1.04, 1);
-    await wait(95);
+    // middenstuk snel erin
+    place(finalTile, 4, startGap, startCell, 95, 1.07, 1);
+    await wait(100);
 
-    place(finalTile, 4, startGap, startCell, 65, 1, 1);
-    await wait(70);
+    place(finalTile, 4, startGap, startCell, 70, 0.98, 1);
+    await wait(75);
 
-    // laatste zichtbare animatie = bovenste middelste blokje schuift omhoog
+    place(finalTile, 4, startGap, startCell, 55, 1, 1);
+    await wait(60);
+
+    // LAATSTE beweging = stuk 1 van onder naar boven
+    const topMiddleStart = pos(7, startGap, startCell);
+    const topMiddleEnd = pos(1, startGap, startCell);
     const topMiddleTile = map[1];
-    const topMiddlePos = pos(1, startGap, startCell);
 
+    topMiddleTile.style.width = startCell + "px";
+    topMiddleTile.style.height = startCell + "px";
     topMiddleTile.style.transition = "none";
-    topMiddleTile.style.transform = `translate(${topMiddlePos.x}px, ${topMiddlePos.y + 24}px) scale(1)`;
+    topMiddleTile.style.transform = `translate(${topMiddleStart.x}px,${topMiddleStart.y}px) scale(1)`;
     topMiddleTile.style.opacity = "1";
 
     await wait(20);
 
-    topMiddleTile.style.transition = "transform 140ms cubic-bezier(.2, 1, .3, 1), filter 140ms ease";
-    topMiddleTile.style.transform = `translate(${topMiddlePos.x}px, ${topMiddlePos.y}px) scale(1)`;
+    topMiddleTile.style.transition = "transform 135ms cubic-bezier(.2,1,.3,1), filter 135ms ease";
+    topMiddleTile.style.transform = `translate(${topMiddleEnd.x}px,${topMiddleEnd.y}px) scale(1)`;
     topMiddleTile.classList.add("private-intro-tile--click");
 
-    await wait(150);
+    await wait(145);
     topMiddleTile.classList.remove("private-intro-tile--click");
 
-    // merge
+    // merge naar 1 vlak
     for (let i = 0; i < 9; i++) {
-      place(map[i], i, endGap, endCell, 320);
+      place(map[i], i, endGap, endCell, 300);
     }
 
-    await wait(340);
+    await wait(320);
 
     // glow
     grid.classList.add("private-intro-grid--glow");
-    await wait(620);
+    await wait(640);
 
     overlay.classList.add("private-intro-overlay--done");
     gate.classList.remove("private-gate--hidden");
