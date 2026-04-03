@@ -94,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!overlay || !grid || !finalTile || !gate || !form || !input || !error || !content) return;
 
-  const tiles = Array.from(grid.querySelectorAll(".private-intro-tile:not(.private-intro-tile--final)"));
   const allTiles = Array.from(grid.querySelectorAll(".private-intro-tile"));
 
   let lastMessage = "";
@@ -130,8 +129,20 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   const curve = (t) => smoothstep(Math.min(t, 0.93));
 
-  const durAt = (t) => Math.round(lerp(160, 55, curve(t)));
-  const gapAt = (t) => Math.round(lerp(95, 18, curve(t)));
+  // trager dan nu
+  const durAt = (t) => Math.round(lerp(210, 78, curve(t)));
+  const gapAt = (t) => Math.round(lerp(120, 26, curve(t)));
+
+  function neighbors(i) {
+    const r = Math.floor(i / 3);
+    const c = i % 3;
+    const n = [];
+    if (c > 0) n.push(i - 1);
+    if (c < 2) n.push(i + 1);
+    if (r > 0) n.push(i - 3);
+    if (r < 2) n.push(i + 3);
+    return n;
+  }
 
   async function runIntro() {
     const rect = grid.getBoundingClientRect();
@@ -160,94 +171,99 @@ document.addEventListener("DOMContentLoaded", () => {
       tile.style.width = cell + "px";
       tile.style.height = cell + "px";
       tile.style.transition = dur
-        ? `transform ${dur}ms cubic-bezier(.2,1,.3,1), opacity ${Math.max(120, dur)}ms ease, width ${dur}ms cubic-bezier(.2,1,.3,1), height ${dur}ms cubic-bezier(.2,1,.3,1)`
+        ? `transform ${dur}ms cubic-bezier(.2,1,.3,1), opacity ${Math.max(140, dur)}ms ease, width ${dur}ms cubic-bezier(.2,1,.3,1), height ${dur}ms cubic-bezier(.2,1,.3,1)`
         : "none";
       tile.style.transform = `translate(${p.x}px,${p.y}px) scale(${scale})`;
       tile.style.opacity = op;
     }
 
-    // vaste start-opstelling, midden leeg, stuk 1 onderaan midden
-    const startState = {
-      0: 2,
-      1: 7, // moet als laatste naar boven
-      2: 1,
-      3: 6,
-      5: 5,
-      6: 0,
-      7: 8,
-      8: 3
-    };
+    // solved state
+    let solved = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
-    Object.entries(startState).forEach(([piece, slot]) => {
-      place(map[Number(piece)], slot, startGap, startCell, 0, 1, 1);
+    // start met leeg vak NIET in het midden, maar rechtsboven
+    // zodat middenstuk later echt meeschuift
+    let state = [0, 1, null, 3, 4, 5, 6, 7, 8];
+    let blank = 2;
+    let prev = -1;
+    const moves = [];
+
+    // shuffle vanaf solved toestand
+    for (let k = 0; k < 12; k++) {
+      const opts = neighbors(blank).filter((n) => n !== prev);
+      const pick = opts[Math.floor(Math.random() * opts.length)];
+      moves.push(pick);
+      prev = blank;
+      [state[blank], state[pick]] = [state[pick], state[blank]];
+      blank = pick;
+    }
+
+    // render startstate: ALLE tiles zichtbaar behalve blank
+    state.forEach((piece, i) => {
+      if (piece === null) return;
+      place(map[piece], i, startGap, startCell, 0, 1, 1);
     });
 
-    place(finalTile, 4, startGap, startCell, 0, 0.72, 0);
-
-    // vaste volgorde, laatste is ALTIJD bovenste middelste blokje
-    const moveOrder = [
-      { piece: 0, to: 0 },
-      { piece: 2, to: 2 },
-      { piece: 3, to: 3 },
-      { piece: 6, to: 6 },
-      { piece: 7, to: 7 },
-      { piece: 8, to: 8 }
-    ];
+    // blank tile verbergen
+    const blankPieceTile = map[2];
+    // niks speciaal, want piece 2 blijft zichtbaar wanneer hij niet blank is
 
     await wait(140);
 
-    for (let i = 0; i < moveOrder.length; i++) {
-      const t = i / Math.max(1, moveOrder.length - 1);
-      const dur = durAt(t);
-      const gap = gapAt(t);
+    // solve reverse
+    for (let step = moves.length - 1; step >= 0; step--) {
+      const t = 1 - (step / Math.max(1, moves.length - 1));
+      let dur = durAt(t);
+      let gap = gapAt(t);
 
-      const step = moveOrder[i];
-      place(map[step.piece], step.to, startGap, startCell, dur);
+      // laatste move sneller maar niet abrupt
+      if (step === 0) {
+        dur = Math.round(dur * 0.58);
+        gap = 10;
+      }
+
+      const from = moves[step];
+      const piece = state[from];
+      if (piece === null) continue;
+
+      place(map[piece], blank, startGap, startCell, dur);
 
       await wait(dur);
+
+      [state[blank], state[from]] = [state[from], state[blank]];
+      blank = from;
+
       await wait(gap);
     }
 
-    // middenstuk snel erin
-    place(finalTile, 4, startGap, startCell, 95, 1.07, 1);
-    await wait(100);
-
-    place(finalTile, 4, startGap, startCell, 70, 0.98, 1);
-    await wait(75);
-
-    place(finalTile, 4, startGap, startCell, 55, 1, 1);
-    await wait(60);
-
-    // LAATSTE beweging = stuk 1 van onder naar boven
-    const topMiddleStart = pos(7, startGap, startCell);
-    const topMiddleEnd = pos(1, startGap, startCell);
+    // extra vaste laatste move:
+    // bovenste middelste tile schuift naar zijn finale plek
+    // vanuit een subtiele offset, zodat dit ALTIJD de laatste zichtbare motion is
     const topMiddleTile = map[1];
+    const p = pos(1, startGap, startCell);
 
-    topMiddleTile.style.width = startCell + "px";
-    topMiddleTile.style.height = startCell + "px";
     topMiddleTile.style.transition = "none";
-    topMiddleTile.style.transform = `translate(${topMiddleStart.x}px,${topMiddleStart.y}px) scale(1)`;
+    topMiddleTile.style.transform = `translate(${p.x}px, ${p.y + 18}px) scale(1)`;
     topMiddleTile.style.opacity = "1";
 
-    await wait(20);
+    await wait(18);
 
-    topMiddleTile.style.transition = "transform 135ms cubic-bezier(.2,1,.3,1), filter 135ms ease";
-    topMiddleTile.style.transform = `translate(${topMiddleEnd.x}px,${topMiddleEnd.y}px) scale(1)`;
+    topMiddleTile.style.transition = "transform 170ms cubic-bezier(.2,1,.3,1), filter 170ms ease";
+    topMiddleTile.style.transform = `translate(${p.x}px, ${p.y}px) scale(1)`;
     topMiddleTile.classList.add("private-intro-tile--click");
 
-    await wait(145);
+    await wait(180);
     topMiddleTile.classList.remove("private-intro-tile--click");
 
     // merge naar 1 vlak
     for (let i = 0; i < 9; i++) {
-      place(map[i], i, endGap, endCell, 300);
+      place(map[i], i, endGap, endCell, 360);
     }
 
-    await wait(320);
+    await wait(390);
 
     // glow
     grid.classList.add("private-intro-grid--glow");
-    await wait(640);
+    await wait(760);
 
     overlay.classList.add("private-intro-overlay--done");
     gate.classList.remove("private-gate--hidden");
