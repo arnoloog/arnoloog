@@ -233,17 +233,29 @@ document.addEventListener("DOMContentLoaded", () => {
       if (gap > 0) await wait(gap);
     }
 
-    // center piece: snel + click
-    place(finalTile, 4, startGap, startCell, 110, 1.08, 1);
-    await wait(120);
-
-    place(finalTile, 4, startGap, startCell, 90, 0.97, 1);
+    // center piece: snel verschijnen
+    place(finalTile, 4, startGap, startCell, 90, 1.04, 1);
     await wait(95);
 
-    place(finalTile, 4, startGap, startCell, 70, 1, 1);
-    finalTile.classList.add("private-intro-tile--click");
-    await wait(90);
-    finalTile.classList.remove("private-intro-tile--click");
+    place(finalTile, 4, startGap, startCell, 65, 1, 1);
+    await wait(70);
+
+    // laatste zichtbare animatie = bovenste middelste blokje schuift omhoog
+    const topMiddleTile = map[1];
+    const topMiddlePos = pos(1, startGap, startCell);
+
+    topMiddleTile.style.transition = "none";
+    topMiddleTile.style.transform = `translate(${topMiddlePos.x}px, ${topMiddlePos.y + 24}px) scale(1)`;
+    topMiddleTile.style.opacity = "1";
+
+    await wait(20);
+
+    topMiddleTile.style.transition = "transform 140ms cubic-bezier(.2, 1, .3, 1), filter 140ms ease";
+    topMiddleTile.style.transform = `translate(${topMiddlePos.x}px, ${topMiddlePos.y}px) scale(1)`;
+    topMiddleTile.classList.add("private-intro-tile--click");
+
+    await wait(150);
+    topMiddleTile.classList.remove("private-intro-tile--click");
 
     // merge
     for (let i = 0; i < 9; i++) {
