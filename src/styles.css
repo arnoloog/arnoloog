@@ -308,6 +308,13 @@ body.page {
   display: block;
 }
 
+/* rolls desktop/mobile switch */
+
+.rolls-meta-mobile,
+.rolls-location {
+  display: none;
+}
+
 /* ========================= */
 /*        RESPONSIVE         */
 /* ========================= */
