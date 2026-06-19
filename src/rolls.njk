@@ -19,17 +19,21 @@ title: Rolls
       </div>
 
       <div class="rolls-label">
-
         <p class="rolls-meta-primary">
-  {{ roll.name | upper }}{% if roll.location %} · {{ roll.location | upper }}{% endif %}
-</p>
+          {{ roll.name | upper }}
+        </p>
+
+        {% if roll.location %}
+          <p class="rolls-location">
+            {{ roll.location }}
+          </p>
+        {% endif %}
 
         {% if roll.film or roll.camera %}
           <p class="rolls-meta-secondary">
             {% if roll.film %}{{ roll.film }}{% endif %}{% if roll.film and roll.camera %} · {% endif %}{% if roll.camera %}{{ roll.camera }}{% endif %}
           </p>
         {% endif %}
-
       </div>
 
     </a>
