@@ -20,8 +20,20 @@ title: Rolls
 
       <div class="rolls-label">
         <p class="rolls-meta-primary">
-          {{ roll.name | upper }}{% if roll.location %} · {{ roll.location | upper }}{% endif %}
+          <span class="rolls-meta-desktop">
+            {{ roll.name | upper }}{% if roll.location %} · {{ roll.location | upper }}{% endif %}
+          </span>
+
+          <span class="rolls-meta-mobile">
+            {{ roll.name | upper }}
+          </span>
         </p>
+
+        {% if roll.location %}
+          <p class="rolls-location">
+            {{ roll.location }}
+          </p>
+        {% endif %}
 
         {% if roll.film or roll.camera %}
           <p class="rolls-meta-secondary">
