@@ -917,10 +917,27 @@ body.page {
     margin-top: 0.08rem;
   }
 
+  .rolls-meta-desktop {
+    display: none;
+  }
+
+  .rolls-meta-mobile {
+    display: inline;
+  }
+
   .rolls-meta-primary {
-    font-size: 0.50rem;
+    font-size: 0.56rem;
     line-height: 1.05;
-    letter-spacing: 0.025em;
+    letter-spacing: 0.055em;
+  }
+
+  .rolls-location {
+    display: block;
+    margin: 0;
+    font-size: 0.50rem;
+    color: #6d6d6d;
+    line-height: 1.05;
+    letter-spacing: 0.03em;
   }
 
   .rolls-meta-secondary {
