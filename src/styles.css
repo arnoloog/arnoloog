@@ -251,6 +251,7 @@ body.page {
 
 .rolls-meta-primary {
   margin: 0;
+  line-height: 1.05;
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -258,9 +259,11 @@ body.page {
 }
 
 .rolls-meta-secondary {
+  margin: 0;
+  line-height: 1.05;
   font-size: 0.62rem;
-  color: #8f8f8f;
   letter-spacing: 0.08em;
+  color: #8f8f8f;
 }
 
 /* ========================= */
