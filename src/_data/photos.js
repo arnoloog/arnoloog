@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 
 const BASE = "src/photos/rolls";
+const rollInfo = require("./rollinfo.json");
 
 function cleanExt(f) {
   return f.replace(".webp.webp", ".webp").replace(".png", ".webp");
@@ -52,32 +53,35 @@ module.exports = () => {
       }
     });
 
-    // combineer grid + trigger, sorteer op nummer
     const combined = [...gridItems];
     if (triggerItem) combined.push(triggerItem);
     combined.sort((a, b) => a.index - b.index);
 
     const year = extractYear(rollName);
     const rollNo = extractRollNo(rollName);
+    const info = rollInfo[rollName] || {};
 
     rolls.push({
       name: rollName,
       year,
       rollNo,
+
+      location: info.location || "",
+      film: info.film || "",
+      camera: info.camera || "",
+
       grid: combined,
       full: fullItems.sort((a, b) => extractNumber(a) - extractNumber(b)),
       trigger: triggerItem ? triggerItem.src : null
     });
   });
 
-  // sorteer rolls: nieuwste jaar bovenaan, dan hoogste rollnr
   rolls.sort((a, b) => {
     if (b.year !== a.year) return b.year - a.year;
     if (b.rollNo !== a.rollNo) return b.rollNo - a.rollNo;
     return a.name.localeCompare(b.name);
   });
 
-  // map per naam (handig, mocht je later nodig hebben)
   const rollsByName = {};
   const rollsList = [];
   for (const r of rolls) {
@@ -86,8 +90,8 @@ module.exports = () => {
   }
 
   return {
-    rolls,       // array
-    rollsByName, // map
-    rollsList    // namen in volgorde
+    rolls,
+    rollsByName,
+    rollsList
   };
 };
