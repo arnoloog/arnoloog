@@ -258,10 +258,9 @@ body.page {
 }
 
 .rolls-meta-secondary {
-  margin: 0.16rem 0 0;
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
-  color: #ffffff;
+  font-size: 0.62rem;
+  color: #8f8f8f;
+  letter-spacing: 0.08em;
 }
 
 /* ========================= */
