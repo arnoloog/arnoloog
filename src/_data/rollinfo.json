@@ -1,55 +1,55 @@
 {
   "2023-roll01": {
-    "location": "",
-    "film": "",
-    "camera": ""
+    "location": "Hungary",
+    "film": "Kodak Ultramax 400",
+    "camera": "Unknown"
   },
 
   "2023-roll02": {
-    "location": "",
-    "film": "",
-    "camera": ""
+    "location": "Ypres, Belgium",
+    "film": "Unknown",
+    "camera": "Unknown"
   },
 
   "2023-roll03": {
-    "location": "",
-    "film": "",
-    "camera": ""
+    "location": "De Klinge, Belgium",
+    "film": "Unknown",
+    "camera": "Olympus OM1"
   },
 
   "2023-roll04": {
-    "location": "",
-    "film": "",
-    "camera": ""
+    "location": "De Klinge, Belgium",
+    "film": "Unknown",
+    "camera": "Olympus OM1"
   },
 
   "2023-roll05": {
-    "location": "",
-    "film": "",
-    "camera": ""
+    "location": "Amsterdam, Netherlands",
+    "film": "Unknown",
+    "camera": "Olympus OM1"
   },
 
   "2023-roll06": {
-    "location": "",
-    "film": "",
-    "camera": ""
+    "location": "La Plagne, France",
+    "film": "Unknown",
+    "camera": "Olympus OM1"
   },
 
   "2023-roll07": {
-    "location": "Tyrol, Austria",
-    "film": "Kodak Gold 200",
-    "camera": "Olympus OM-2n"
+    "location": "La Plagne, France",
+    "film": "Unknown",
+    "camera": "Olympus OM1"
   },
 
   "2023-roll08": {
-    "location": "",
-    "film": "",
-    "camera": ""
+    "location": "Scotland, Inverness/Edinburgh",
+    "film": "Kodak Portra 400",
+    "camera": "Olympus OM1"
   },
 
   "2023-roll09": {
-    "location": "",
-    "film": "",
-    "camera": ""
+    "location": "Scotland, Isle Of Skye",
+    "film": "Lomography Color 400",
+    "camera": "Olympus OM1"
   }
 }
