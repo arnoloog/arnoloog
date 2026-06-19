@@ -9,7 +9,15 @@ permalink: "rolls/{{ roll.name }}/"
 
 <article class="roll-page">
   <header class="roll-header">
-    <h1 class="roll-title">{{ roll.name }}</h1>
+    <p class="roll-meta-primary">
+      {{ roll.name | upper }}{% if roll.location %} · {{ roll.location }}{% endif %}
+    </p>
+
+    {% if roll.film or roll.camera %}
+      <p class="roll-meta-secondary">
+        {% if roll.film %}{{ roll.film }}{% endif %}{% if roll.film and roll.camera %} · {% endif %}{% if roll.camera %}{{ roll.camera }}{% endif %}
+      </p>
+    {% endif %}
   </header>
 
   <section class="roll-gallery">
