@@ -6,6 +6,7 @@ title: Rolls
 <section class="rolls-grid">
   {% for roll in photos.rolls %}
     <a href="/rolls/{{ roll.name }}/" class="rolls-item">
+
       <div class="rolls-thumb">
         {% if roll.trigger %}
           <img src="{{ roll.trigger }}" loading="lazy" alt="{{ roll.name }}">
@@ -16,9 +17,21 @@ title: Rolls
           {% endif %}
         {% endif %}
       </div>
+
       <div class="rolls-label">
-        {{ roll.name }}
+
+        <p class="rolls-meta-primary">
+          {{ roll.name | upper }}{% if roll.location %} · {{ roll.location }}{% endif %}
+        </p>
+
+        {% if roll.film or roll.camera %}
+          <p class="rolls-meta-secondary">
+            {% if roll.film %}{{ roll.film }}{% endif %}{% if roll.film and roll.camera %} · {% endif %}{% if roll.camera %}{{ roll.camera }}{% endif %}
+          </p>
+        {% endif %}
+
       </div>
+
     </a>
   {% endfor %}
 </section>
