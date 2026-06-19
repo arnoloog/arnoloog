@@ -13,13 +13,7 @@ permalink: /private/
       <p class="private-text">enter to continue.</p>
 
       <form class="private-form" id="privateForm" novalidate>
-        <input
-          type="password"
-          id="privatePassword"
-          class="private-input"
-          placeholder="password"
-          autocomplete="current-password"
-        >
+        <input type="password" id="privatePassword" class="private-input" placeholder="password" autocomplete="current-password">
         <button class="private-button" type="submit">enter</button>
       </form>
 
@@ -28,20 +22,23 @@ permalink: /private/
 
     <div class="private-intro-overlay" id="privateIntroOverlay" aria-hidden="true">
       <div class="private-intro-grid" id="privateIntroGrid">
-        {% for i in [0,1,2,3,5,6,7,8] %}
+        {% for i in [0,1,2,3,4,5,6,7,8] %}
           <div
             class="private-intro-tile"
             data-piece="{{ i }}"
             style="--piece-col:{{ i % 3 }}; --piece-row:{{ (i / 3) | int }};"
-          ></div>
+          >
+            <svg class="private-lock-art" viewBox="0 0 300 300" aria-hidden="true">
+              <rect width="300" height="300" fill="black"/>
+              <g fill="none" stroke="white" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity="0.97">
+                <path d="M116 132V101c0-21 15-36 34-36s34 15 34 36v31"/>
+                <rect x="88" y="132" width="124" height="100" rx="18"/>
+                <path d="M150 174c-8 0-14 6-14 14 0 6 3 10 8 12v16h12v-16c5-2 8-6 8-12 0-8-6-14-14-14Z"/>
+                <circle cx="150" cy="188" r="3.5" fill="white" stroke="none"/>
+              </g>
+            </svg>
+          </div>
         {% endfor %}
-
-        <div
-          class="private-intro-tile private-intro-tile--final"
-          id="privateIntroFinal"
-          data-piece="4"
-          style="--piece-col:1; --piece-row:1;"
-        ></div>
       </div>
     </div>
 
@@ -85,14 +82,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const overlay = document.getElementById("privateIntroOverlay");
   const grid = document.getElementById("privateIntroGrid");
-  const finalTile = document.getElementById("privateIntroFinal");
   const gate = document.getElementById("privateGate");
   const form = document.getElementById("privateForm");
   const input = document.getElementById("privatePassword");
   const error = document.getElementById("privateError");
   const content = document.getElementById("privateContent");
 
-  if (!overlay || !grid || !finalTile || !gate || !form || !input || !error || !content) return;
+  if (!overlay || !grid || !gate || !form || !input || !error || !content) return;
 
   const allTiles = Array.from(grid.querySelectorAll(".private-intro-tile"));
 
@@ -128,21 +124,8 @@ document.addEventListener("DOMContentLoaded", () => {
     return t * t * (3 - 2 * t);
   };
   const curve = (t) => smoothstep(Math.min(t, 0.93));
-
-  // trager dan nu
-  const durAt = (t) => Math.round(lerp(210, 78, curve(t)));
-  const gapAt = (t) => Math.round(lerp(120, 26, curve(t)));
-
-  function neighbors(i) {
-    const r = Math.floor(i / 3);
-    const c = i % 3;
-    const n = [];
-    if (c > 0) n.push(i - 1);
-    if (c < 2) n.push(i + 1);
-    if (r > 0) n.push(i - 3);
-    if (r < 2) n.push(i + 3);
-    return n;
-  }
+  const durAt = (t) => Math.round(lerp(220, 82, curve(t)));
+  const gapAt = (t) => Math.round(lerp(110, 20, curve(t)));
 
   async function runIntro() {
     const rect = grid.getBoundingClientRect();
@@ -150,7 +133,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const startGap = 6;
     const endGap = 0;
-
     const startCell = (size - startGap * 2) / 3;
     const endCell = size / 3;
 
@@ -177,91 +159,71 @@ document.addEventListener("DOMContentLoaded", () => {
       tile.style.opacity = op;
     }
 
-    // solved state
-    let solved = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    const startState = {
+      0: 2,
+      2: 0,
+      3: 6,
+      6: 3,
+      4: 5,
+      5: 8,
+      8: 4,
+      7: 1,
+      1: 7
+    };
 
-    // start met leeg vak NIET in het midden, maar rechtsboven
-    // zodat middenstuk later echt meeschuift
-    let state = [0, 1, null, 3, 4, 5, 6, 7, 8];
-    let blank = 2;
-    let prev = -1;
-    const moves = [];
-
-    // shuffle vanaf solved toestand
-    for (let k = 0; k < 12; k++) {
-      const opts = neighbors(blank).filter((n) => n !== prev);
-      const pick = opts[Math.floor(Math.random() * opts.length)];
-      moves.push(pick);
-      prev = blank;
-      [state[blank], state[pick]] = [state[pick], state[blank]];
-      blank = pick;
-    }
-
-    // render startstate: ALLE tiles zichtbaar behalve blank
-    state.forEach((piece, i) => {
-      if (piece === null) return;
-      place(map[piece], i, startGap, startCell, 0, 1, 1);
+    Object.entries(startState).forEach(([piece, slot]) => {
+      place(map[Number(piece)], slot, startGap, startCell, 0, 1, 1);
     });
 
-    // blank tile verbergen
-    const blankPieceTile = map[2];
-    // niks speciaal, want piece 2 blijft zichtbaar wanneer hij niet blank is
+    const moveOrder = [
+      { piece: 0, to: 0 },
+      { piece: 2, to: 2 },
+      { piece: 3, to: 3 },
+      { piece: 6, to: 6 },
+      { piece: 4, to: 4 },
+      { piece: 5, to: 5 },
+      { piece: 8, to: 8 },
+      { piece: 7, to: 7 }
+    ];
 
     await wait(140);
 
-    // solve reverse
-    for (let step = moves.length - 1; step >= 0; step--) {
-      const t = 1 - (step / Math.max(1, moves.length - 1));
-      let dur = durAt(t);
-      let gap = gapAt(t);
+    for (let i = 0; i < moveOrder.length; i++) {
+      const t = i / Math.max(1, moveOrder.length - 1);
+      const dur = durAt(t);
+      const gap = gapAt(t);
+      const step = moveOrder[i];
 
-      // laatste move sneller maar niet abrupt
-      if (step === 0) {
-        dur = Math.round(dur * 0.58);
-        gap = 10;
-      }
-
-      const from = moves[step];
-      const piece = state[from];
-      if (piece === null) continue;
-
-      place(map[piece], blank, startGap, startCell, dur);
-
+      place(map[step.piece], step.to, startGap, startCell, dur);
       await wait(dur);
-
-      [state[blank], state[from]] = [state[from], state[blank]];
-      blank = from;
-
       await wait(gap);
     }
 
-    // extra vaste laatste move:
-    // bovenste middelste tile schuift naar zijn finale plek
-    // vanuit een subtiele offset, zodat dit ALTIJD de laatste zichtbare motion is
     const topMiddleTile = map[1];
-    const p = pos(1, startGap, startCell);
+    const topMiddleStart = pos(7, startGap, startCell);
+    const topMiddleEnd = pos(1, startGap, startCell);
 
+    topMiddleTile.style.width = startCell + "px";
+    topMiddleTile.style.height = startCell + "px";
     topMiddleTile.style.transition = "none";
-    topMiddleTile.style.transform = `translate(${p.x}px, ${p.y + 18}px) scale(1)`;
+    topMiddleTile.style.transform = `translate(${topMiddleStart.x}px,${topMiddleStart.y}px) scale(1)`;
     topMiddleTile.style.opacity = "1";
 
-    await wait(18);
+    await wait(24);
 
-    topMiddleTile.style.transition = "transform 170ms cubic-bezier(.2,1,.3,1), filter 170ms ease";
-    topMiddleTile.style.transform = `translate(${p.x}px, ${p.y}px) scale(1)`;
+    topMiddleTile.style.transition = "transform 190ms cubic-bezier(.2,1,.3,1), filter 190ms ease";
+    topMiddleTile.style.transform = `translate(${topMiddleEnd.x}px,${topMiddleEnd.y}px) scale(1)`;
     topMiddleTile.classList.add("private-intro-tile--click");
 
-    await wait(180);
+    await wait(200);
     topMiddleTile.classList.remove("private-intro-tile--click");
 
-    // merge naar 1 vlak
     for (let i = 0; i < 9; i++) {
       place(map[i], i, endGap, endCell, 360);
     }
 
     await wait(390);
 
-    // glow
     grid.classList.add("private-intro-grid--glow");
     await wait(760);
 
