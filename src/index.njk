@@ -6,22 +6,27 @@ title: ARNOLOOG
 <section class="home">
   <div class="home-grid">
     {% for roll in photos.rolls %}
-  <div class="roll-block" data-roll="{{ roll.name }}" style="display: contents;">
-    {% for item in roll.grid | reverse %}
-      {% if not loop.parent.loop.first or loop.index0 >= 3 %}
-        {% if item.isTrigger %}
-          <a href="/rolls/{{ roll.name }}/" class="grid-item grid-item--trigger">
-            <img src="{{ item.src }}" loading="lazy" alt="">
-          </a>
-        {% else %}
-          <div class="grid-item">
-            <img src="{{ item.src }}" loading="lazy" alt="">
-          </div>
+      <div class="roll-block" data-roll="{{ roll.name }}" style="display: contents;">
+
+        {% set visibleGrid = roll.grid %}
+        {% if loop.first %}
+          {% set visibleGrid = roll.grid | slice(3, roll.grid.length) %}
         {% endif %}
-      {% endif %}
+
+        {% for item in visibleGrid | reverse %}
+          {% if item.isTrigger %}
+            <a href="/rolls/{{ roll.name }}/" class="grid-item grid-item--trigger">
+              <img src="{{ item.src }}" loading="lazy" alt="">
+            </a>
+          {% else %}
+            <div class="grid-item">
+              <img src="{{ item.src }}" loading="lazy" alt="">
+            </div>
+          {% endif %}
+        {% endfor %}
+
+      </div>
     {% endfor %}
-  </div>
-{% endfor %}
   </div>
 
   <div class="fast-scroll-thumb" aria-label="fast scroll"></div>
