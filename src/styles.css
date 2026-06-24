@@ -1012,6 +1012,6 @@ body.page {
 
 @media (min-width: 1000px) {
   .home-grid {
-    max-width: 950px;
+    max-width: 900px;
   }
 }
