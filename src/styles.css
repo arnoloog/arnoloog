@@ -1012,7 +1012,16 @@ body.page {
 
 @media (min-width: 1000px) {
   .home-grid {
-    max-width: 900px;
+    max-width: 950px;
     margin-top: -320px;
+  }
+
+  .site-header__inner {
+    max-width: 950px;
+  }
+
+  .nav-icon svg {
+    width: 1.15rem;
+    height: 1.15rem;
   }
 }
