@@ -7,24 +7,19 @@ title: ARNOLOOG
   <div class="home-grid">
     {% for roll in photos.rolls %}
       <div class="roll-block" data-roll="{{ roll.name }}" style="display: contents;">
-
-        {% set visibleGrid = roll.grid %}
-        {% if loop.first %}
-          {% set visibleGrid = roll.grid | slice(3, roll.grid.length) %}
-        {% endif %}
-
-        {% for item in visibleGrid | reverse %}
-          {% if item.isTrigger %}
-            <a href="/rolls/{{ roll.name }}/" class="grid-item grid-item--trigger">
-              <img src="{{ item.src }}" loading="lazy" alt="">
-            </a>
-          {% else %}
-            <div class="grid-item">
-              <img src="{{ item.src }}" loading="lazy" alt="">
-            </div>
+        {% for item in roll.grid | reverse %}
+          {% if not loop.parent.loop.first or loop.index0 > 2 %}
+            {% if item.isTrigger %}
+              <a href="/rolls/{{ roll.name }}/" class="grid-item grid-item--trigger">
+                <img src="{{ item.src }}" loading="lazy" alt="">
+              </a>
+            {% else %}
+              <div class="grid-item">
+                <img src="{{ item.src }}" loading="lazy" alt="">
+              </div>
+            {% endif %}
           {% endif %}
         {% endfor %}
-
       </div>
     {% endfor %}
   </div>
@@ -34,6 +29,7 @@ title: ARNOLOOG
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+
   // =========================
   // PUZZLE — home grid
   // =========================
