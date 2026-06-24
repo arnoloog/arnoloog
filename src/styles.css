@@ -1005,3 +1005,13 @@ body.page {
   font-size: 0.7rem;
   color: rgba(255,255,255,0.35);
 }
+
+/* ========================= */
+/*      DESKTOP TUNING       */
+/* ========================= */
+
+@media (min-width: 1000px) {
+  .home-grid {
+    max-width: 950px;
+  }
+}
