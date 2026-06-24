@@ -1029,13 +1029,13 @@ body.page {
   color: #7d7d7d;
 }
 
-.discovery-end__title {
-  margin: 0;
-  max-width: 900px;
-  font-size: clamp(2.5rem, 6vw, 5.5rem);
-  line-height: 0.95;
-  letter-spacing: -0.04em;
-  color: #fff;
+.discovery-end__kicker {
+  margin: 0 0 1.2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
 }
 
 .discovery-end__text {
