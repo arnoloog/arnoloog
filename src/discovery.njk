@@ -9,7 +9,7 @@ permalink: /discovery/
 
   <div class="discovery-overlay">
     <div class="discovery-meta" id="meta"></div>
-    <div class="discovery-hint">tap to explore</div>
+    <div class="discovery-hint" id="hint">tap to explore</div>
   </div>
 </section>
 
@@ -27,39 +27,80 @@ document.addEventListener("DOMContentLoaded", () => {
     {% endfor %}
   ];
 
-  let current = null;
-  let currentRoll = null;
-
   const viewer = document.getElementById("viewer");
   const meta = document.getElementById("meta");
+  const hint = document.getElementById("hint");
 
-  if (!viewer || !meta || !images.length) {
+  if (!viewer || !meta || !hint || !images.length) {
     console.warn("Discovery: geen full images gevonden.");
     return;
   }
+
+  let session = [];
+  let index = 0;
+  let ended = false;
 
   function preload(src) {
     const img = new Image();
     img.src = src;
   }
 
-  function pickRandom() {
-    let next = null;
-    let tries = 0;
+  function shuffle(list) {
+    const arr = [...list];
 
-    do {
-      next = images[Math.floor(Math.random() * images.length)];
-      tries++;
-    } while (
-      tries < 40 &&
-      (
-        next.src === current ||
-        (images.length > 8 && next.roll === currentRoll)
-      )
-    );
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
 
-    current = next.src;
-    currentRoll = next.roll;
+    return arr;
+  }
+
+  function formatRollLabel(img) {
+    const rollLabel = img.roll
+      .replace(/^\d{4}-/, "")
+      .replace("roll", "roll ");
+
+    return `${img.year} · ${rollLabel}`;
+  }
+
+  function startSession() {
+    session = shuffle(images);
+    index = 0;
+    ended = false;
+    hint.textContent = "tap to explore";
+    showNext();
+  }
+
+  function showEnd() {
+    ended = true;
+
+    viewer.style.opacity = "0";
+
+    setTimeout(() => {
+      viewer.removeAttribute("src");
+      viewer.alt = "";
+
+      meta.textContent = "you've reached the end.";
+      hint.textContent = "tap to shuffle again";
+
+      viewer.style.opacity = "1";
+    }, 120);
+  }
+
+  function showNext() {
+    if (ended) {
+      startSession();
+      return;
+    }
+
+    if (index >= session.length) {
+      showEnd();
+      return;
+    }
+
+    const next = session[index];
+    index++;
 
     preload(next.src);
 
@@ -69,24 +110,19 @@ document.addEventListener("DOMContentLoaded", () => {
       viewer.src = next.src;
       viewer.alt = next.roll;
 
-      const rollLabel = next.roll
-        .replace(/^\d{4}-/, "")
-        .replace("roll", "roll ");
+      meta.textContent = `${formatRollLabel(next)} · ${index}/${session.length}`;
+      hint.textContent = "tap to explore";
 
-      meta.textContent = `${next.year} · ${rollLabel}`;
       viewer.style.opacity = "1";
     }, 120);
   }
 
-  // eerste beeld direct laden
-  pickRandom();
+  startSession();
 
-  // click / tap = volgende
   viewer.addEventListener("click", () => {
-    pickRandom();
+    showNext();
   });
 
-  // swipe mobile
   let startX = 0;
 
   document.addEventListener("touchstart", (e) => {
@@ -96,15 +132,14 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("touchend", (e) => {
     const endX = e.changedTouches[0].clientX;
     if (Math.abs(endX - startX) > 40) {
-      pickRandom();
+      showNext();
     }
   }, { passive: true });
 
-  // keyboard
   document.addEventListener("keydown", (e) => {
     if (e.key === "ArrowRight" || e.key === " " || e.key === "Enter") {
       e.preventDefault();
-      pickRandom();
+      showNext();
     }
   });
 });
