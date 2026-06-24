@@ -73,20 +73,28 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showEnd() {
-    ended = true;
+  ended = true;
 
-    viewer.style.opacity = "0";
+  viewer.style.opacity = "0";
 
-    setTimeout(() => {
-      viewer.removeAttribute("src");
-      viewer.alt = "";
+  setTimeout(() => {
+    viewer.removeAttribute("src");
+    viewer.alt = "";
 
-      meta.textContent = "you've reached the end.";
-      hint.textContent = "tap to shuffle again";
+    meta.innerHTML = `
+      <div class="discovery-end">
+        <p class="discovery-end__kicker">end of discovery</p>
+        <h1 class="discovery-end__title">you made it through the archive.</h1>
+        <p class="discovery-end__text">
+          thanks for wandering all the way through. the frames will reshuffle when you're ready.
+        </p>
+      </div>
+    `;
 
-      viewer.style.opacity = "1";
-    }, 120);
-  }
+    hint.textContent = "tap to shuffle again";
+    viewer.style.opacity = "1";
+  }, 120);
+}
 
   function showNext() {
     if (ended) {
