@@ -1024,9 +1024,13 @@ body.page {
     font-size: 1.35rem;
   }
 
-  .nav a svg,
+  .nav-icon {
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+
   .nav-icon svg {
-    width: 1.6rem;
-    height: 1.6rem;
+    width: 100%;
+    height: 100%;
   }
 }
